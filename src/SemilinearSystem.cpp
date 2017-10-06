@@ -2,7 +2,8 @@
 /**
 *	@file	SemilinearSystem
 */
-SemilinearSystem::SemilinearSystem(double D_SpeedOfSound_Arg, double D_TerminalTime_Arg, double D_Boundary_Position_Left_Arg, double D_Boundary_Position_Right_Arg, double D_Delta_x_Arg, int I_Lambda_Expansion_Length_Arg)
+SemilinearSystem::SemilinearSystem(double D_SpeedOfSound_Arg, double D_TerminalTime_Arg, double D_Boundary_Position_Left_Arg,
+				   double D_Boundary_Position_Right_Arg, double D_Delta_x_Arg, int I_Lambda_Expansion_Length_Arg)
 {
 	/**
 	*	@brief		Construcctor of the class 'SemilinearSystem'
@@ -49,14 +50,14 @@ SemilinearSystem::SemilinearSystem(double D_SpeedOfSound_Arg, double D_TerminalT
   D_Delta_x = D_Delta_x_Arg;  //	Width of spatial discretization
   
   D_SpeedOfSound = D_SpeedOfSound_Arg; //	Speed of Sound
-	D_Delta_t 					=	D_Delta_x/D_SpeedOfSound;												//	time step size
-	D_TerminalTime 				= 	D_TerminalTime_Arg;														//	Terminal Time
-	D_Boundary_Position_Left	=	D_Boundary_Position_Left_Arg;											//	coordinate of the 'left' boundary
-	D_Boundary_Position_Right 	=	D_Boundary_Position_Right_Arg;											//	coordinate of the 'right' boundary
+	D_Delta_t 					=	D_Delta_x/D_SpeedOfSound; //	time step size
+	D_TerminalTime 				= 	D_TerminalTime_Arg; //	Terminal Time
+	D_Boundary_Position_Left	=	D_Boundary_Position_Left_Arg; //	coordinate of the 'left' boundary
+	D_Boundary_Position_Right 	=	D_Boundary_Position_Right_Arg; //	coordinate of the 'right' boundary
 
 
 	//	Declaration of variables TYPE INT
-	I_Lambda_Expansion_Length	=	I_Lambda_Expansion_Length_Arg;											//	Number of coefficients that are included in the truncated representation of the friction coefficent Lambda
+	I_Lambda_Expansion_Length	=	I_Lambda_Expansion_Length_Arg; //	Number of coefficients that are included in the truncated representation of the friction coefficent Lambda
 	I_NumberOfTimeSteps 		=	D_TerminalTime/D_Delta_t;												//	#TimeSteps
 	I_NumberOfCells 			=	abs(D_Boundary_Position_Right - D_Boundary_Position_Left)/D_Delta_x;	//	#Cells
 
@@ -264,21 +265,30 @@ void SemilinearSystem::Set_Lambda_Averages( double* DA_P_Lambda_AV, double* DA_P
 void SemilinearSystem::Run( double DA_P_Lambda_Coefficients[] )
 {
 	/**
-	*	@brief			function that solves the PDE-System for a friction coefficient defined by the coefficients passed by caller and storing the boundary values of the unknown P at all time steps
+	*	@brief function that solves the PDE-System for a
+	*	friction coefficient defined by the coefficients
+	*	passed by caller and storing the boundary values of
+	*	the unknown P at all time steps
 	*
-	*	This member function is the essential handshake for the user.\n
-	*	Here, the coefficients of the Lambda-Expansion are provided, the semilienar system is solved and the boundary values of P are stored in the corresponding arrays.\n
-	*	This method calls:\n
-	*	Set_Lambda_Averages' 	with the provided coefficients\n
+	*	This member function is the essential handshake for
+	*	the user.\n Here, the coefficients of the
+	*	Lambda-Expansion are provided, the semilienar system
+	*	is solved and the boundary values of P are stored in
+	*	the corresponding arrays.\n This method calls:\n
+	*	Set_Lambda_Averages' with the provided coefficients\n
 	*	
-	*	@param[in]		DA_P_Lambda_Coefficients	Coefficients of the Lambda-Expansion with the expectation value of lambda on the first array element (length = Number of Coefficients + 1)
+	*	@param[in] DA_P_Lambda_Coefficients Coefficients of
+	*	the Lambda-Expansion with the expectation value of
+	*	lambda on the first array element (length = Number of
+	*	Coefficients + 1)
 	*
-	*	@date 			07.09.2017
+	*	@date 07.09.2017
 	*
-	*	@version 		1.0
+	*	@version 1.0
 	*
-	*	@todo			check the scheme again! - done! (11.09.2017)\n
-						test without source-term for traveling waves
+	* @todo check the scheme again! - done! (11.09.2017)\n test
+						without source-term
+						for traveling waves
 	*/
 	
 	//	Reading the initial conditions for P and Q
@@ -292,20 +302,26 @@ void SemilinearSystem::Run( double DA_P_Lambda_Coefficients[] )
 	
 	//	Calling the method that sets the integral averages of the chosen friction coefficient
 	Set_Lambda_Averages(DA_P_Lambda_AV, DA_P_Lambda_Coefficients, I_Lambda_Expansion_Length, I_NumberOfCells, D_Boundary_Position_Left, D_Delta_x);
+
+
+	// writing the values
+	char filename[100] = "output";
+	Write2File(filename, false);
 	
 	//	Solving the forward problem with current friction coefficient
 	//	Loop over timesteps of the discretization
 	for (int I_TimeStepCount = 1; I_TimeStepCount <= I_NumberOfTimeSteps; ++I_TimeStepCount)//1; ++I_TimeStepCount)//
 	{
-		//	Updating P and Q on the interior cells of the discretization
-		//	Loop over interior cells of the discretization (all except '0' and 'I_NumberOfCells + 1' reserved for the ghost cells)
-		for (int I_CellCount = 1; I_CellCount <= I_NumberOfCells; ++I_CellCount)
-		{
-			//	Calculating the value of P
-			DA_Values_P_Intermediate[I_CellCount]		=	(1.0/2.0)*( DA_P_Values_P[I_CellCount - 1] + DA_P_Values_P[I_CellCount + 1] ) - (1.0/(2.0*D_SpeedOfSound))*( DA_P_Values_Q[I_CellCount + 1] - DA_P_Values_Q[I_CellCount - 1] ) + (D_Delta_t/(2.0*D_SpeedOfSound))*( DA_P_Lambda_AV[I_CellCount-1]*FrictionFunction( DA_P_Values_P[I_CellCount - 1], DA_P_Values_Q[I_CellCount - 1] ) - DA_P_Lambda_AV[I_CellCount + 1]*FrictionFunction( DA_P_Values_P[I_CellCount + 1], DA_P_Values_Q[I_CellCount + 1] ) );
-			//	Calculating the value of Q
-			DA_Values_Q_Intermediate[I_CellCount]		=	(1.0/2.0)*( DA_P_Values_Q[I_CellCount - 1] + DA_P_Values_Q[I_CellCount + 1] ) - (D_SpeedOfSound/2.0)*( DA_P_Values_P[I_CellCount + 1] - DA_P_Values_P[I_CellCount - 1] ) + (D_Delta_t/2)*( DA_P_Lambda_AV[I_CellCount-1]*FrictionFunction( DA_P_Values_P[I_CellCount - 1], DA_P_Values_Q[I_CellCount - 1] ) + DA_P_Lambda_AV[I_CellCount + 1]*FrictionFunction( DA_P_Values_P[I_CellCount + 1], DA_P_Values_Q[I_CellCount + 1] ) );
- 		}
+	  
+	  //	Updating P and Q on the interior cells of the discretization
+	  //	Loop over interior cells of the discretization (all except '0' and 'I_NumberOfCells + 1' reserved for the ghost cells)
+	  for (int I_CellCount = 1; I_CellCount <= I_NumberOfCells; ++I_CellCount)
+	    {
+	      //	Calculating the value of P
+	      DA_Values_P_Intermediate[I_CellCount]		=	(1.0/2.0)*( DA_P_Values_P[I_CellCount - 1] + DA_P_Values_P[I_CellCount + 1] ) - (1.0/(2.0*D_SpeedOfSound))*( DA_P_Values_Q[I_CellCount + 1] - DA_P_Values_Q[I_CellCount - 1] ) + (D_Delta_t/(2.0*D_SpeedOfSound))*( DA_P_Lambda_AV[I_CellCount-1]*FrictionFunction( DA_P_Values_P[I_CellCount - 1], DA_P_Values_Q[I_CellCount - 1] ) - DA_P_Lambda_AV[I_CellCount + 1]*FrictionFunction( DA_P_Values_P[I_CellCount + 1], DA_P_Values_Q[I_CellCount + 1] ) );
+	      //	Calculating the value of Q
+	      DA_Values_Q_Intermediate[I_CellCount]		=	(1.0/2.0)*( DA_P_Values_Q[I_CellCount - 1] + DA_P_Values_Q[I_CellCount + 1] ) - (D_SpeedOfSound/2.0)*( DA_P_Values_P[I_CellCount + 1] - DA_P_Values_P[I_CellCount - 1] ) + (D_Delta_t/2)*( DA_P_Lambda_AV[I_CellCount-1]*FrictionFunction( DA_P_Values_P[I_CellCount - 1], DA_P_Values_Q[I_CellCount - 1] ) + DA_P_Lambda_AV[I_CellCount + 1]*FrictionFunction( DA_P_Values_P[I_CellCount + 1], DA_P_Values_Q[I_CellCount + 1] ) );
+	    }
 		
 		//	Updating Q on the ghost cells by calling the functions specifying the boudnary values for Q
 		DA_Values_Q_Intermediate[0]						=	Value_Q_L( I_TimeStepCount*D_Delta_t );
@@ -327,6 +343,8 @@ void SemilinearSystem::Run( double DA_P_Lambda_Coefficients[] )
 			//	Calculating the value of Q
 			DA_P_Values_Q[I_CellCount]					=	DA_Values_Q_Intermediate[I_CellCount];
  		}
+		// writing the values
+		Write2File(filename, true);
 	}
 	
 }
@@ -359,11 +377,16 @@ void SemilinearSystem::Write2File(char* filename, bool append)
     P_Store.open(urlP, ios::out);
     Q_Store.open(urlQ, ios::out);
   }
-  
-  for (int I_CellCount = 0; I_CellCount <= I_NumberOfCells + 1; ++I_CellCount)
+
+
+  //
+  P_Store	<<  DA_P_Values_P[0];
+  Q_Store	<<  DA_P_Values_Q[0];
+
+  for (int I_CellCount = 1; I_CellCount <= I_NumberOfCells + 1; ++I_CellCount)
     {
-      P_Store	<<  DA_P_Values_P[I_CellCount] << ",";
-      Q_Store	<<  DA_P_Values_Q[I_CellCount] << ",";
+      P_Store	<<  "," << DA_P_Values_P[I_CellCount];
+      Q_Store	<<  "," << DA_P_Values_Q[I_CellCount];
     }
 
   P_Store << endl;
@@ -372,8 +395,6 @@ void SemilinearSystem::Write2File(char* filename, bool append)
   //	closing
   P_Store.close();
   Q_Store.close();
-
-
     
 }
 

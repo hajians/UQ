@@ -24,7 +24,7 @@ int main()
 {
   //  SemilinearSystem(double SpeedOfSound, double T, double x_L,
   //  double x_R, double Dx, int ExNum)
-  SemilinearSystem SemilinearSystem(300.0, 1.0, 0.0, 1.0, .01, 0);
+  SemilinearSystem SemilinearSystem(300.0, 1.0, 0.0, 1.0, .05, 0);
 		
   // SemilinearSystem.EvalTest( );
 	
@@ -35,9 +35,9 @@ int main()
   
   double a[1] = {.3};
 	
-  SemilinearSystem.Run_Text_Output(a);
+  SemilinearSystem.Run(a);
 
-  SemilinearSystem.Write2File("output");
+  // SemilinearSystem.Write2File("output", false);
 
 	
   // getch ();
