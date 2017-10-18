@@ -15,21 +15,19 @@ nonlinear effects.*/
 
 #include "SemilinearSystem.h"
 
-
-
-
 using namespace std;
 
 int main()
 {
   //  SemilinearSystem(double SpeedOfSound, double T, double x_L,
   //  double x_R, double Dx, int ExNum)
-  SemilinearSystem SemilinearSystem(300.0, 1.0, 0.0, 1.0, .05, 0);
-  
-  // HELLO SOHEIL!
-  
-  
-		
+  // SemilinearSystem SemilinearSystem(1.0, 10.0, 0.0, 1.0, .01, 0);
+
+  SemilinearSystem pipe1 = SemilinearSystem(1.0, 10.0, 0.0, 1.0, .01, 0);
+  SemilinearSystem pipe2 = SemilinearSystem(1.0, 10.0, 0.0, 1.0, .01, 0);
+
+  pipe1.info();
+
   // SemilinearSystem.EvalTest( );
 	
   //	Run over time steps
@@ -37,18 +35,19 @@ int main()
 
   cout<< "> Starting <" << endl;
   
-  double a[1] = {.3};
+  double a[1] = {0.0};
+  pipe1.Run(a);
 	
-  SemilinearSystem.Run(a);
+  // SemilinearSystem.Run(a);
 
   // SemilinearSystem.Write2File("output", false);
 
 	
   // getch ();
 	
-  cout << SemilinearSystem.get_P_Left_Boundary( 0.5 ) << endl;
+  // cout << SemilinearSystem.get_P_Left_Boundary( 0.5 ) << endl;
 	
-  double b[1] = {.7};
+  // double b[1] = {.7};
 	
   // SemilinearSystem.Run(b);
 	

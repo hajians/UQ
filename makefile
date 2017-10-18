@@ -8,12 +8,16 @@
 CC := g++
 
 CCFLAGS := -fbounds-check -fstack-check \
-	   -pg 
+	   -pg -fPIC
 
-LIB := 
+# -Wl : pass option as an option to the linker
+LDFLAGS := -shared 
+
+LIB :=
 
 SRCDIR := src
 BUILDDIR := build
+LIBDIR := lib
 TARGET := bin
 
 SRCEXT = cpp
@@ -30,12 +34,16 @@ main: $(OBJECTS)
 $(BUILDDIR)/%.o: $(SRCDIR)/%.cpp
 	$(CC) $(CCFLAGS) -c $< -o $@ $(LIB)
 
+$(LIBDIR)/%.so: $(BUILDDIR)/%.o
+	$(CC) $(LDFLAGS) -Wl,-soname,$@ -o $@ $^
+
+
 # $(DEP): $(SRCDIR)/fort_depend.py
 # 	@echo "Making dependencies..."
 # 	python $(SRCDIR)/fort_depend.py -b $(BUILDDIR) -w -o $(DEP) -f $(SRCDIR)/*.$(SRCEXT)
 
 clean:
 	@echo "Cleaning..."
-	rm -f $(BUILDDIR)/*.o $(TARGET)/*
+	rm -f $(BUILDDIR)/*.o $(LIBDIR)/*.so $(TARGET)/* 
 
 

@@ -1,12 +1,18 @@
 #include "SemilinearSystem.h"
+
 /**
 *	@file	SemilinearSystem
 */
-SemilinearSystem::SemilinearSystem(double D_SpeedOfSound_Arg, double D_TerminalTime_Arg, double D_Boundary_Position_Left_Arg,
-				   double D_Boundary_Position_Right_Arg, double D_Delta_x_Arg, int I_Lambda_Expansion_Length_Arg)
+
+SemilinearSystem::SemilinearSystem(double D_SpeedOfSound_Arg,
+				   double D_TerminalTime_Arg,
+				   double D_Boundary_Position_Left_Arg,
+				   double D_Boundary_Position_Right_Arg,
+				   double D_Delta_x_Arg,
+				   int I_Lambda_Expansion_Length_Arg)
 {
 	/**
-	*	@brief		Construcctor of the class 'SemilinearSystem'
+	*	@brief		Constructor of the class 'SemilinearSystem'
 	*
 	*	Any instance of 'SemilinearSystem' represents a
 	*	certain setting of the gas-transportation model
@@ -45,38 +51,53 @@ SemilinearSystem::SemilinearSystem(double D_SpeedOfSound_Arg, double D_TerminalT
 	*	@date 07.09.2017		
 	*/
   
-				//	Declaration of variables TYPE DOUBLE
+  //	Declaration of variables TYPE DOUBLE
   
   D_Delta_x = D_Delta_x_Arg;  //	Width of spatial discretization
   
   D_SpeedOfSound = D_SpeedOfSound_Arg; //	Speed of Sound
-	D_Delta_t 					=	D_Delta_x/D_SpeedOfSound; //	time step size
-	D_TerminalTime 				= 	D_TerminalTime_Arg; //	Terminal Time
-	D_Boundary_Position_Left	=	D_Boundary_Position_Left_Arg; //	coordinate of the 'left' boundary
-	D_Boundary_Position_Right 	=	D_Boundary_Position_Right_Arg; //	coordinate of the 'right' boundary
+  D_Delta_t 					=	D_Delta_x/D_SpeedOfSound; //	time step size
+  D_TerminalTime 				= 	D_TerminalTime_Arg; //	Terminal Time
+  D_Boundary_Position_Left	=	D_Boundary_Position_Left_Arg; //	coordinate of the 'left' boundary
+  D_Boundary_Position_Right 	=	D_Boundary_Position_Right_Arg; //	coordinate of the 'right' boundary
+  
+  
+  //	Declaration of variables TYPE INT
+  I_Lambda_Expansion_Length	=	I_Lambda_Expansion_Length_Arg; //	Number of coefficients that are included in the truncated representation of the friction coefficent Lambda
+  I_NumberOfTimeSteps 		=	D_TerminalTime/D_Delta_t;												//	#TimeSteps
+  I_NumberOfCells 			=	abs(D_Boundary_Position_Right - D_Boundary_Position_Left)/D_Delta_x;	//	#Cells
 
-
-	//	Declaration of variables TYPE INT
-	I_Lambda_Expansion_Length	=	I_Lambda_Expansion_Length_Arg; //	Number of coefficients that are included in the truncated representation of the friction coefficent Lambda
-	I_NumberOfTimeSteps 		=	D_TerminalTime/D_Delta_t;												//	#TimeSteps
-	I_NumberOfCells 			=	abs(D_Boundary_Position_Right - D_Boundary_Position_Left)/D_Delta_x;	//	#Cells
-
-
-	//	DATA-Stores
-	//	(the public .run - method will operate on DA_P_Values_P and DA_P_Values_Q)
-	DA_P_Values_P 				=	new double [I_NumberOfCells + 2];
-	DA_P_Values_Q				=	new double [I_NumberOfCells + 2];
+  
+  //	DATA-Stores
+  //	(the public .run - method will operate on DA_P_Values_P and DA_P_Values_Q)
+  DA_P_Values_P 				=	new double [I_NumberOfCells + 2];
+  DA_P_Values_Q				=	new double [I_NumberOfCells + 2];
 	
-	//	(the public methods that represent the observation operator will act on the elements of these vectors)
-	DA_P_Left_P					=	new double [I_NumberOfTimeSteps + 1];
-	DA_P_Right_P				=	new double [I_NumberOfTimeSteps + 1];
+  //	(the public methods that represent the observation operator will act on the elements of these vectors)
+  DA_P_Left_P  = new double [I_NumberOfTimeSteps + 1];
+  DA_P_Right_P = new double [I_NumberOfTimeSteps + 1];
 	
-	//	LAMBDA-EXPANSION:
-	//	The following vector will contain the integral average of LAMBDA (the truncated representation)
-	DA_P_Lambda_AV 				=	new double [I_NumberOfCells + 2];
-	//	Initialization of the array storing the coefficients of the expansion of the radmon field
-	DA_P_Lambda_Coefficients 	=	new double [I_Lambda_Expansion_Length + 1];
-	
+  //	LAMBDA-EXPANSION:
+  //	The following vector will contain the integral average of LAMBDA (the truncated representation)
+  DA_P_Lambda_AV = new double [I_NumberOfCells + 2];
+  //	Initialization of the array storing the coefficients of the expansion of the radmon field
+  DA_P_Lambda_Coefficients = new double [I_Lambda_Expansion_Length + 1];
+
+  DA_Centroid = new double[I_NumberOfCells];
+  
+  DA_Centroid[0] = D_Boundary_Position_Left_Arg + 0.5 * D_Delta_x;
+  
+  for (int i=1; i < I_NumberOfCells; i++)
+    {
+      DA_Centroid[i] = DA_Centroid[i-1] + D_Delta_x;
+    }
+  
+  // current time
+  D_Current_T = 0.0;
+
+  // current time index
+  I_Current_T_Index = 0;
+
 }
 
 
@@ -119,12 +140,19 @@ double SemilinearSystem::Read_BoundaryValues_Q_Left( double D_EvaluationTime_Arg
 double SemilinearSystem::Read_BoundaryValues_Q_Right( double D_EvaluationTime_Arg )				//	Evaluation Tested
 {
 	/**
-	*	@brief	Reads the values of the user-provided function that specifies the boundary values of q at the right boundary.
+	*	@brief Reads the values of the user-provided function
+	*	that specifies the boundary values of q at the right
+	*	boundary.
 	*
-	*	The function calles an user-provided function that specifies the boundary data of Q at the right boundary and returns the result.
+	*	The function calles an user-provided function that
+	*	specifies the boundary data of Q at the right boundary
+	*	and returns the result.
 	*
-	*	@param[in]	D_EvaluationTime	Time for which the right boundary value for Q should be evaluated
-	*	@param[out]	D_ValueAtT			Value of the boundary data of Q at the right boundary at time D_EvaluationTime
+	*	@param[in] D_EvaluationTime Time for which the right
+	*	boundary value for Q should be evaluated
+
+	*	@param[out] D_ValueAtT Value of the boundary data of Q
+	*	at the right boundary at time D_EvaluationTime
 	*
 	*	@date 07.09.2017
 	*/
@@ -142,19 +170,32 @@ double SemilinearSystem::Read_BoundaryValues_Q_Right( double D_EvaluationTime_Ar
 
 // 	2) INITIAL DATA
 //	The following functions provide the initial data of P and Q, allready in integral-average
-void SemilinearSystem::Set_IC_Q( double* DA_P_Values_Q_Arg, int I_NumberOfCells_Arg, double D_Boundary_Position_Left_Arg, double D_Delta_x_Arg )	//	Evaluation Tested
+void SemilinearSystem::Set_IC_Q( double* DA_P_Values_Q_Arg, int I_NumberOfCells_Arg,
+				 double D_Boundary_Position_Left_Arg,
+				 double D_Delta_x_Arg )	//	Evaluation Tested
 {
 	/**
 	*	@brief	Initializes the integral averages of Q based on the initial condition.
 	*
-	*	The function intializes the array containing the integral averages of Q_0 on the cosen discretization.\n
-	*	For the internal cells, this is obtained by evaluating an user-provided function that specifies the initial data for Q.
-	*	The values for the ghost cells stem from the boundary data for Q.
+	*	The function intializes the array containing the
+	*	integral averages of Q_0 on the cosen
+	*	discretization.\n For the internal cells, this is
+	*	obtained by evaluating an user-provided function that
+	*	specifies the initial data for Q.  The values for the
+	*	ghost cells stem from the boundary data for Q.
 	*
-	*	@param[in]		DA_P_Values_Q				Memory location for the integral averages of Q for the internal and ghost cells frespectively. (size: Number of Cells + 2)
-	*	@param[in]		I_NumberOfCells				Number of cells in the discretization
-	*	@param[in]		D_Boundary_Position_Left	Coordinate of the left boundary of the pipe
-	*	@param[in]		D_Delta_x					Width of the spatial discretization
+	*	@param[in] DA_P_Values_Q Memory location for the
+	*	integral averages of Q for the internal and ghost
+	*	cells frespectively. (size: Number of Cells + 2)
+	*
+	*	@param[in] I_NumberOfCells Number of cells in the
+	*	discretization
+	*
+	*	@param[in] D_Boundary_Position_Left Coordinate of the
+	*	left boundary of the pipe
+	*
+	*	@param[in] D_Delta_x Width of the spatial
+	*	discretization
 	*
 	*	@date 07.09.2017
 	*
@@ -173,30 +214,38 @@ void SemilinearSystem::Set_IC_Q( double* DA_P_Values_Q_Arg, int I_NumberOfCells_
 
 void SemilinearSystem::Set_IC_P( double* DA_P_Values_P, int I_NumberOfCells, double D_Boundary_Position_Left, double D_Delta_x )
 {
-	/**
-	*	@brief	Initializes the integral averages of P based on the initial condition.
-	*
-	*	The function intializes the array containing the integral averages of P_0 on the cosen discretization.\n
-	*	For the internal cells, this is obtained by evaluating an user-provided function that specifies the initial data for P.
-	*	The values for the ghost cells are obtained by a linear function based on the integral averages of P on the 2 most left and 2 most right internal cells.
-	*
-	*	@param[in]		DA_P_Values_P				Memory location for the integral averages of P for the internal and ghost cells frespectively. (size: Number of Cells + 2)
-	*	@param[in]		I_NumberOfCells				Number of cells in the discretization
-	*	@param[in]		D_Boundary_Position_Left	Coordinate of the left boundary of the pipe
-	*	@param[in]		D_Delta_x					Width of the spatial discretization
-	*
-	*	@date 07.09.2017
-	*
-	*	@todo	better integration scheme
-	*/
-	
-	//	Fixing the values at the boundaries (Have to be given and to be consistent with the spatial averages)
-	DA_P_Values_P[0]					=	( Value_P_0( D_Boundary_Position_Left - D_Delta_x ) + Value_P_0( D_Boundary_Position_Left ) )/2.0;
+  /**
+   *	@brief	Initializes the integral averages of P based on the initial condition.
+   *
+   *	The function intializes the array containing the integral
+   *	averages of P_0 on the cosen discretization.\n For the
+   *	internal cells, this is obtained by evaluating an
+   *	user-provided function that specifies the initial data for P.
+   *	The values for the ghost cells are obtained by a linear
+   *	function based on the integral averages of P on the 2 most
+   *	left and 2 most right internal cells.
+   *
+   *	@param[in] DA_P_Values_P Memory location for the
+   *	integral averages of P for the internal and ghost
+   *	cells frespectively. (size: Number of Cells + 2)
+   *	@param[in] I_NumberOfCells Number of cells in the
+   *	discretization @param[in] D_Boundary_Position_Left
+   *	Coordinate of the left boundary of the pipe @param[in]
+   *	D_Delta_x Width of the spatial discretization
+   *
+   *	@date 07.09.2017
+   *
+   *	@todo	better integration scheme
+   */
+  
+  //	Fixing the values at the boundaries (Have to be given and to
+  //	be consistent with the spatial averages)
+	DA_P_Values_P[0]			=	( Value_P_0( D_Boundary_Position_Left - D_Delta_x ) + Value_P_0( D_Boundary_Position_Left ) )/2.0;
 	DA_P_Values_P[I_NumberOfCells + 1]	=	( Value_P_0( D_Boundary_Position_Left + (I_NumberOfCells)*D_Delta_x ) + Value_P_0( D_Boundary_Position_Left + (I_NumberOfCells + 1)*D_Delta_x ) )/2.0;
 	
 	for (int i = 1; i <= I_NumberOfCells; ++i)
 	{
-		DA_P_Values_P[i] 				=	( Value_P_0( D_Boundary_Position_Left + ( i-1 )*D_Delta_x ) + Value_P_0( D_Boundary_Position_Left + ( i )*D_Delta_x ) )/2.0;
+		DA_P_Values_P[i]	=	( Value_P_0( D_Boundary_Position_Left + ( i-1 )*D_Delta_x ) + Value_P_0( D_Boundary_Position_Left + ( i )*D_Delta_x ) )/2.0;
 	}
 }
 
@@ -264,95 +313,118 @@ void SemilinearSystem::Set_Lambda_Averages( double* DA_P_Lambda_AV, double* DA_P
 
 void SemilinearSystem::Run( double DA_P_Lambda_Coefficients[] )
 {
-	/**
-	*	@brief function that solves the PDE-System for a
-	*	friction coefficient defined by the coefficients
-	*	passed by caller and storing the boundary values of
-	*	the unknown P at all time steps
-	*
-	*	This member function is the essential handshake for
-	*	the user.\n Here, the coefficients of the
-	*	Lambda-Expansion are provided, the semilienar system
-	*	is solved and the boundary values of P are stored in
-	*	the corresponding arrays.\n This method calls:\n
-	*	Set_Lambda_Averages' with the provided coefficients\n
-	*	
-	*	@param[in] DA_P_Lambda_Coefficients Coefficients of
-	*	the Lambda-Expansion with the expectation value of
-	*	lambda on the first array element (length = Number of
-	*	Coefficients + 1)
-	*
-	*	@date 07.09.2017
-	*
-	*	@version 1.0
-	*
-	* @todo check the scheme again! - done! (11.09.2017)\n test
-						without source-term
-						for traveling waves
-	*/
-	
-	//	Reading the initial conditions for P and Q
-	Set_IC_Q(DA_P_Values_Q, I_NumberOfCells, D_Boundary_Position_Left, D_Delta_x);	
-	Set_IC_P(DA_P_Values_P, I_NumberOfCells, D_Boundary_Position_Left, D_Delta_x);
-
-	
-	//	Declaring arrays for P,Q that store intermediate results
-	double DA_Values_P_Intermediate[I_NumberOfCells + 2];
-	double DA_Values_Q_Intermediate[I_NumberOfCells + 2];
-	
-	//	Calling the method that sets the integral averages of the chosen friction coefficient
-	Set_Lambda_Averages(DA_P_Lambda_AV, DA_P_Lambda_Coefficients, I_Lambda_Expansion_Length, I_NumberOfCells, D_Boundary_Position_Left, D_Delta_x);
-
-
-	// writing the values
-	char filename[100] = "output";
-	Write2File(filename, false);
-	
-	//	Solving the forward problem with current friction coefficient
-	//	Loop over timesteps of the discretization
-	for (int I_TimeStepCount = 1; I_TimeStepCount <= I_NumberOfTimeSteps; ++I_TimeStepCount)//1; ++I_TimeStepCount)//
+  /**
+   *	@brief function that solves the PDE-System for a
+   *	friction coefficient defined by the coefficients
+   *	passed by caller and storing the boundary values of
+   *	the unknown P at all time steps
+   *
+   *	This member function is the essential handshake for
+   *	the user.\n Here, the coefficients of the
+   *	Lambda-Expansion are provided, the semilienar system
+   *	is solved and the boundary values of P are stored in
+   *	the corresponding arrays.\n This method calls:\n
+   *	Set_Lambda_Averages' with the provided coefficients\n
+   *	
+   *	@param[in] DA_P_Lambda_Coefficients Coefficients of
+   *	the Lambda-Expansion with the expectation value of
+   *	lambda on the first array element (length = Number of
+   *	Coefficients + 1)
+   *
+   *	@date 07.09.2017
+   *
+   *	@version 1.0
+   *
+   * @todo check the scheme again! - done! (11.09.2017)\n test
+   *					without source-term
+   *					for traveling waves
+   */
+  
+  //	Reading the initial conditions for P and Q
+  Set_IC_Q(DA_P_Values_Q, I_NumberOfCells, D_Boundary_Position_Left, D_Delta_x);	
+  Set_IC_P(DA_P_Values_P, I_NumberOfCells, D_Boundary_Position_Left, D_Delta_x);
+  
+  
+  //	Declaring arrays for P,Q that store intermediate results
+  double DA_Values_P_Intermediate[I_NumberOfCells + 2];
+  double DA_Values_Q_Intermediate[I_NumberOfCells + 2];
+  
+  //	Calling the method that sets the integral averages of the chosen friction coefficient
+  Set_Lambda_Averages(DA_P_Lambda_AV, DA_P_Lambda_Coefficients,
+		      I_Lambda_Expansion_Length, I_NumberOfCells,
+		      D_Boundary_Position_Left, D_Delta_x);
+  
+  
+  // setting time to zero
+  D_Current_T = 0.0;
+  I_Current_T_Index = 0;
+  
+  // writing the values
+  char filename[100] = "output";
+  Write2File(filename, false);
+  
+  //	Solving the forward problem with current friction coefficient
+  //	Loop over timesteps of the discretization
+  for (int I_TimeStepCount = 1; I_TimeStepCount <= I_NumberOfTimeSteps; ++I_TimeStepCount)//1; ++I_TimeStepCount)//
+    {
+      
+      //	Updating P and Q on the interior cells of the
+      //	discretization.  Loop over interior cells of the
+      //	discretization (all except '0' and 'I_NumberOfCells +
+      //	1' reserved for the ghost cells)
+      for (int I_CellCount = 1; I_CellCount <= I_NumberOfCells; ++I_CellCount)
 	{
-	  
-	  //	Updating P and Q on the interior cells of the discretization
-	  //	Loop over interior cells of the discretization (all except '0' and 'I_NumberOfCells + 1' reserved for the ghost cells)
-	  for (int I_CellCount = 1; I_CellCount <= I_NumberOfCells; ++I_CellCount)
-	    {
-	      //	Calculating the value of P
-	      DA_Values_P_Intermediate[I_CellCount]		=	(1.0/2.0)*( DA_P_Values_P[I_CellCount - 1] + DA_P_Values_P[I_CellCount + 1] ) - (1.0/(2.0*D_SpeedOfSound))*( DA_P_Values_Q[I_CellCount + 1] - DA_P_Values_Q[I_CellCount - 1] ) + (D_Delta_t/(2.0*D_SpeedOfSound))*( DA_P_Lambda_AV[I_CellCount-1]*FrictionFunction( DA_P_Values_P[I_CellCount - 1], DA_P_Values_Q[I_CellCount - 1] ) - DA_P_Lambda_AV[I_CellCount + 1]*FrictionFunction( DA_P_Values_P[I_CellCount + 1], DA_P_Values_Q[I_CellCount + 1] ) );
-	      //	Calculating the value of Q
-	      DA_Values_Q_Intermediate[I_CellCount]		=	(1.0/2.0)*( DA_P_Values_Q[I_CellCount - 1] + DA_P_Values_Q[I_CellCount + 1] ) - (D_SpeedOfSound/2.0)*( DA_P_Values_P[I_CellCount + 1] - DA_P_Values_P[I_CellCount - 1] ) + (D_Delta_t/2)*( DA_P_Lambda_AV[I_CellCount-1]*FrictionFunction( DA_P_Values_P[I_CellCount - 1], DA_P_Values_Q[I_CellCount - 1] ) + DA_P_Lambda_AV[I_CellCount + 1]*FrictionFunction( DA_P_Values_P[I_CellCount + 1], DA_P_Values_Q[I_CellCount + 1] ) );
-	    }
-		
-		//	Updating Q on the ghost cells by calling the functions specifying the boudnary values for Q
-		DA_Values_Q_Intermediate[0]						=	Value_Q_L( I_TimeStepCount*D_Delta_t );
-		DA_Values_Q_Intermediate[I_NumberOfCells + 1]	=	Value_Q_R( I_TimeStepCount*D_Delta_t );
-		
-		//	Updating P on the ghost cells according to the flow of P and Q
-		DA_Values_P_Intermediate[0]						=	DA_P_Values_P[1] - DA_P_Values_Q[1]/D_SpeedOfSound + DA_Values_Q_Intermediate[0]/D_SpeedOfSound - (D_Delta_t/D_SpeedOfSound)*DA_P_Lambda_AV[1]*FrictionFunction( DA_P_Values_P[1], DA_P_Values_Q[1] );
-		DA_Values_P_Intermediate[I_NumberOfCells + 1]	=	DA_P_Values_P[I_NumberOfCells] + DA_P_Values_Q[I_NumberOfCells]/D_SpeedOfSound - DA_Values_Q_Intermediate[I_NumberOfCells + 1]/D_SpeedOfSound + (D_Delta_t/D_SpeedOfSound)*DA_P_Lambda_AV[I_NumberOfCells]*FrictionFunction( DA_P_Values_P[I_NumberOfCells], DA_P_Values_Q[I_NumberOfCells] );
-		
-		//	Storing the boundary values of P in the corresponding vectors
-		DA_P_Left_P[I_TimeStepCount]					=	DA_Values_P_Intermediate[0];
-		DA_P_Right_P[I_TimeStepCount]					=	DA_Values_P_Intermediate[I_NumberOfCells + 1];
-		
-		//	Overwriting 'DA_P_Values_Q' and 'DA_P_Values_P'
-		for (int I_CellCount = 0; I_CellCount <= I_NumberOfCells + 1; ++I_CellCount)
-		{
-			//	Calculating the value of P
-			DA_P_Values_P[I_CellCount]					=	DA_Values_P_Intermediate[I_CellCount];
-			//	Calculating the value of Q
-			DA_P_Values_Q[I_CellCount]					=	DA_Values_Q_Intermediate[I_CellCount];
- 		}
-		// writing the values
-		Write2File(filename, true);
+	  //	Calculating the value of P
+	  DA_Values_P_Intermediate[I_CellCount] = (1.0/2.0)*( DA_P_Values_P[I_CellCount - 1] + DA_P_Values_P[I_CellCount + 1] )
+	    - (1.0/(2.0*D_SpeedOfSound))*( DA_P_Values_Q[I_CellCount + 1] - DA_P_Values_Q[I_CellCount - 1] )
+	    + (D_Delta_t/(2.0*D_SpeedOfSound))*( DA_P_Lambda_AV[I_CellCount-1] *
+						 FrictionFunction( DA_P_Values_P[I_CellCount - 1], DA_P_Values_Q[I_CellCount - 1] )
+						 - DA_P_Lambda_AV[I_CellCount + 1] *
+						 FrictionFunction( DA_P_Values_P[I_CellCount + 1], DA_P_Values_Q[I_CellCount + 1] ) );
+	  //	Calculating the value of Q
+	  DA_Values_Q_Intermediate[I_CellCount] = (1.0/2.0)*( DA_P_Values_Q[I_CellCount - 1] + DA_P_Values_Q[I_CellCount + 1] )
+	    - (D_SpeedOfSound/2.0)*( DA_P_Values_P[I_CellCount + 1] - DA_P_Values_P[I_CellCount - 1] )
+	    + (D_Delta_t/2)*( DA_P_Lambda_AV[I_CellCount-1] *
+			      FrictionFunction( DA_P_Values_P[I_CellCount - 1], DA_P_Values_Q[I_CellCount - 1] )
+			      + DA_P_Lambda_AV[I_CellCount + 1] *
+			      FrictionFunction( DA_P_Values_P[I_CellCount + 1], DA_P_Values_Q[I_CellCount + 1] ) );
 	}
-	
+		
+      //	Updating Q on the ghost cells by calling the functions
+      //	specifying the boudnary values for Q
+      DA_Values_Q_Intermediate[0]			=	Value_Q_L( I_TimeStepCount*D_Delta_t );
+      DA_Values_Q_Intermediate[I_NumberOfCells + 1]	=	Value_Q_R( I_TimeStepCount*D_Delta_t );
+		
+      //	Updating P on the ghost cells according to the flow of P and Q
+      DA_Values_P_Intermediate[0]						=	DA_P_Values_P[1] - DA_P_Values_Q[1]/D_SpeedOfSound + DA_Values_Q_Intermediate[0]/D_SpeedOfSound - (D_Delta_t/D_SpeedOfSound)*DA_P_Lambda_AV[1]*FrictionFunction( DA_P_Values_P[1], DA_P_Values_Q[1] );
+      DA_Values_P_Intermediate[I_NumberOfCells + 1]	=	DA_P_Values_P[I_NumberOfCells] + DA_P_Values_Q[I_NumberOfCells]/D_SpeedOfSound - DA_Values_Q_Intermediate[I_NumberOfCells + 1]/D_SpeedOfSound + (D_Delta_t/D_SpeedOfSound)*DA_P_Lambda_AV[I_NumberOfCells]*FrictionFunction( DA_P_Values_P[I_NumberOfCells], DA_P_Values_Q[I_NumberOfCells] );
+		
+      //	Storing the boundary values of P in the corresponding vectors
+      DA_P_Left_P[I_TimeStepCount]		=	DA_Values_P_Intermediate[0];
+      DA_P_Right_P[I_TimeStepCount]		=	DA_Values_P_Intermediate[I_NumberOfCells + 1];
+      
+      //	Overwriting 'DA_P_Values_Q' and 'DA_P_Values_P'
+      for (int I_CellCount = 0; I_CellCount <= I_NumberOfCells + 1; ++I_CellCount)
+	{
+	  //	Calculating the value of P
+	  DA_P_Values_P[I_CellCount]					=	DA_Values_P_Intermediate[I_CellCount];
+	  //	Calculating the value of Q
+	  DA_P_Values_Q[I_CellCount]					=	DA_Values_Q_Intermediate[I_CellCount];
+	}
+      // upodate the time
+      D_Current_T = D_Current_T + D_Delta_t;
+      I_Current_T_Index += 1;
+      // writing the values
+      Write2File(filename, true);
+    }
+  
 }
 
 void SemilinearSystem::Write2File(char* filename, bool append)
 {
   /** 
    * @brief writing quantities into a file.
+   * @author Soheil Hajian
    */
 
   //	Creating instances of the Data-File-Operation - Classes
@@ -369,28 +441,22 @@ void SemilinearSystem::Write2File(char* filename, bool append)
   strcat(urlQ, "_Q.dat");
   
   //	Open the objects
-  if (append){
-    P_Store.open(urlP, std::ios_base::app);
-    Q_Store.open(urlQ, std::ios_base::app);
-  }
-  else {
-    P_Store.open(urlP, ios::out);
-    Q_Store.open(urlQ, ios::out);
-  }
-
-
-  //
-  P_Store	<<  DA_P_Values_P[0];
-  Q_Store	<<  DA_P_Values_Q[0];
-
-  for (int I_CellCount = 1; I_CellCount <= I_NumberOfCells + 1; ++I_CellCount)
+  if (append)
     {
-      P_Store	<<  "," << DA_P_Values_P[I_CellCount];
-      Q_Store	<<  "," << DA_P_Values_Q[I_CellCount];
+      P_Store.open(urlP, fstream::app|fstream::out);
+      Q_Store.open(urlQ, fstream::app|fstream::out);
+    }
+  else
+    {
+      P_Store.open(urlP, std::ios_base::out);
+      Q_Store.open(urlQ, std::ios_base::out);
     }
 
-  P_Store << endl;
-  Q_Store << endl;
+  for (int i=0; i<I_NumberOfCells; i++)
+    {
+      P_Store << DA_Centroid[i] << "," << DA_P_Values_P[i+1] << "," << D_Current_T << endl;
+      Q_Store << DA_Centroid[i] << "," << DA_P_Values_Q[i+1] << "," << D_Current_T << endl;
+    }
 
   //	closing
   P_Store.close();
@@ -678,4 +744,48 @@ void SemilinearSystem::EvalTest(   )
 	
 	//	return the 0!!!!
 	return; 
+}
+
+void SemilinearSystem::info()
+{
+  /**
+   * @brief giving info about the pipe in the terminal
+   * @author Soheil Hajian
+   */
+  cout << "Omega = " << "(" << D_Boundary_Position_Left << "," << D_Boundary_Position_Right << ")" << endl;
+  cout << "Dt = " << D_Delta_t << endl;
+  cout << "Dx = " << D_Delta_x << endl;
+
+  cout << "Current time = " << D_Current_T << endl;
+  cout << "Final time = " << D_TerminalTime << endl;
+  
+}
+
+int SemilinearSystem::CurrentTimeIndex()
+{
+  /**
+   * @brief returns current time index.
+   * @author Soheil Hajian
+   */
+  return I_Current_T_Index;
+}
+
+double* SemilinearSystem::BoundaryValueP_Left()
+{
+  /**
+   * @brief returns the Boundary Value of P as an array.
+   * @author Soheil Hajian
+   */
+
+  return DA_P_Left_P;
+}
+
+double* SemilinearSystem::BoundaryValueP_Right()
+{
+  /**
+   * @brief returns the Boundary Value of P as an array.
+   * @author Soheil Hajian
+   */
+
+  return DA_P_Right_P;
 }

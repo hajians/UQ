@@ -13,3 +13,19 @@ build/Value_Lambda_Base.o: src/Value_Lambda_Base.cpp
 build/Initial_Data_For_Q.o: src/Initial_Data_For_Q.cpp
 
 build/SourceTerm.o: src/SourceTerm.cpp
+
+build/foo.o: src/foo.cpp 
+
+build/test.o: src/test.cpp
+
+lib/foo.so: build/foo.o build/test.o
+
+build/CWrapper.o: src/CWrapper.cpp
+lib/CWrapper.so: build/CWrapper.o \
+		 build/SemilinearSystem.o \
+		 build/Boundary_Data_For_Q_L.o \
+		 build/Boundary_Data_For_Q_R.o \
+		 build/Initial_Data_For_P.o \
+		 build/Value_Lambda_Base.o \
+		 build/Initial_Data_For_Q.o \
+		 build/SourceTerm.o			
