@@ -66,7 +66,7 @@ class SemilinearSystem
   //	Declaration of functions
   SemilinearSystem(double D_SpeedOfSound, double D_TerminalTime,
 		   double D_Boundary_Position_Left, double D_Boundary_Position_Right,
-		   double D_Delta_x, int I_Lambda_Expansion_Length);	//Constructor
+		   double D_Delta_x, int I_Lambda_Expansion_Length, double eps); // Constructor
 		
   // giving info about pipe in the terminal
   void info();
@@ -76,70 +76,116 @@ class SemilinearSystem
 
   void EvalTest(  ); //	Testing function that is for development only and will be erased later
 
-  void Run( double DA_P_Lambda_Coefficients[] ); //	Function that can be callled from main code that provides the coefficients of LAMBDA-Expansion and solves the main problem for these values
+  /*
+    Function that can be callled from main code that provides the
+    coefficients of LAMBDA-Expansion and solves the main problem for
+    these values
+   */
+  void Run( double DA_P_Lambda_Coefficients[], bool write2file_bool = true ); 
 
-  void Run_Text_Output( double DA_P_Lambda_Coefficients[] ); //	Function that can be callled from main code that provides the coefficients of LAMBDA-Expansion and solves the main problem for these values
+  /*
+    Function that can be callled from main code that provides the
+    coefficients of LAMBDA-Expansion and solves the main problem for these
+    values
+   */
+  void Run_Text_Output( double DA_P_Lambda_Coefficients[] ); 
   
   void Write2File(char* filename, bool append = true);
   
   // 	RETURN-TYPE double
   //	Observation Operator
-  double get_P_Left_Boundary( double D_EvaluationTime_Arg);	//	Returns value of P on the left boundary for given time
-  double get_P_Right_Boundary( double D_EvaluationTime_Arg);	//	Returns value of P on the right boundary for given time
-  double get_P_Difference( double D_EvaluationTime_Arg);		//	Returns difference of P between boundaries.
+  double get_P_Left_Boundary( double D_EvaluationTime_Arg); //	Returns value of P on the left boundary for given time
+  double get_P_Right_Boundary( double D_EvaluationTime_Arg); //	Returns value of P on the right boundary for given time
+  double get_P_Difference( double D_EvaluationTime_Arg); //	Returns difference of P between boundaries.
 
   int CurrentTimeIndex();
   double* BoundaryValueP_Left();
   double* BoundaryValueP_Right();
+  double* TimeSlices();
   
  private:
   //	Declaration of VARIABLES
   //	TYPE: double - single variable
   ///	Width of the spatial Discretization
-  /**	Double that stores the width of the spatial discretization, i.e., the width of the computational cells. It is connected to D_Delta_t and D_SpeedOfSound by D_Delta_t D_SpeedOfSound = D_Delta_x */
+
+  /**	
+	Double that stores the width of the spatial discretization, i.e., the
+	width of the computational cells. It is connected to D_Delta_t and
+	D_SpeedOfSound by D_Delta_t D_SpeedOfSound = D_Delta_x 
+  */
   double	D_Delta_x;						//	size of spatial discretization
   ///	Speed of Soud in the underlying physical system.
   /**	Double that stores the speed of sound in the underlying physical system. This value determines the propagation-speed of information through the system.	*/
   double	D_SpeedOfSound;					//	speed of sound
+
   ///	Time Step width
-  /**	Double that stores the time step width utilized in the discretization. It is connected to D_Delta_x and D_SpeedOfSound by D_Delta_t D_SpeedOfSound = D_Delta_x */
+  /**	Double that stores the time step width utilized in the
+	discretization. It is connected to D_Delta_x and
+	D_SpeedOfSound by D_Delta_t D_SpeedOfSound = D_Delta_x 
+  */
   double 	D_Delta_t;						//	time step size
   ///	Time horizon of the dynamic problem
-  /**	Double that stores the runtime T of the underlying physical system. At best, it is some multiple of D_Delta_t. */
+  /**	Double that stores the runtime T of the underlying physical
+	system. At best, it is some multiple of D_Delta_t. 
+  */
   double	D_TerminalTime;					//	Terminal Time
   ///	Coordinate of the left boundary of the pipe
-  /**	Double that stores the coordinate of the left boundary of the pipe. Usually, it is set to zero.	*/
+  /**	Double that stores the coordinate of the left boundary of the
+	pipe. Usually, it is set to zero. 
+  */
   double	D_Boundary_Position_Left;		//	position of left boudnary
   ///	Coordinate of the right boundary of the pipe
-  /**	Double that stores the right boundary of the pipe. Usually, it is set to the length of the pipe.	*/
+  /**	Double that stores the right boundary of the pipe. Usually, it
+	is set to the length of the pipe.  
+  */
   double	D_Boundary_Position_Right;		//	position of right boundary
   
   //	TYPE: int
   ///	Number of summands in the Lambda-expansion
-  /**	Integer that stores the number of summands in the expansion of Lambda  after which this representation is truncated.	*/
+  /**	Integer that stores the number of summands in the expansion of
+	Lambda after which this representation is truncated.  
+  */
   int		I_Lambda_Expansion_Length;		//	Number of coefficients for the expansion that are considered (trunaction of the sum after this number)
   ///	Number of time steps
-  /**	Integer that stores the number if time steps in the numerical scheme.	*/
+  /**	Integer that stores the number if time steps in the numerical
+	scheme.  
+  */
   int 	I_NumberOfTimeSteps;			//	Number of Time Steps for the forwad computation
   ///	Number of interior cells in the pipe
-  /**	Integer that stores the number of interior cells in the numerical scheme.	*/
+  /**	Integer that stores the number of interior cells in the
+	numerical scheme. 
+  */
   int		I_NumberOfCells;				//	Number of Cells in the discretization
   
   //	TYPE: double - arrays with dynamic memory allocation
   ///	Values of P in a single time step
-  /**	Pointer to Double Array that contains the integral averages of P and values of P on the ghost cells in the active time slice. Since the boundary values of P
-   *	are stored in a different array and no information on the actual evolution of P have to be stored, the values of this array are overwritten in every time step.	*/
+  /**	Pointer to Double Array that contains the integral averages of
+   *	P and values of P on the ghost cells in the active time
+   *	slice. Since the boundary values of P are stored in a
+   *	different array and no information on the actual evolution of
+   *	P have to be stored, the values of this array are overwritten
+   *	in every time step. 
+   */
   double	* DA_P_Values_P;				//	Pointer on Internal p-Array
   ///	Values of Q in a single time step
-  /**	Pointer to Double Array that contains the integral averages of Q and values of Q on the ghost cells in the active time slice. Since no information
-   *	on the actual evolution of Q have to be stored, the values of this array are overwritten in every time step.	*/
+  /**	Pointer to Double Array that contains the integral averages of
+   *	Q and values of Q on the ghost cells in the active time
+   *	slice. Since no information on the actual evolution of Q have
+   *	to be stored, the values of this array are overwritten in
+   *	every time step.  
+   */
   double	* DA_P_Values_Q;				//	Pointer on Internal q-Array
   ///	Values of P in the left ghost cells for all time steps.
-  /**	Pointer to Double Array that stores the values of P on the ghost cells left of the pipe, thus approximating the trace aveluation of P on this boundary.	*/
+  /**	Pointer to Double Array that stores the values of P on the
+	ghost cells left of the pipe, thus approximating the trace
+	aveluation of P on this boundary.
+  */
   double	* DA_P_Left_P;					//	Pointer on boundary values of p at left boundary
   ///	Values of P in the right ghost cells for all
   ///	time steps.
-  /**	Pointer to Double Array that stores the values of P on the ghost cells right of the pipe, thus approximating the trace aveluation of P on this boundary.	*/
+  /**	Pointer to Double Array that stores the values of P on the
+	ghost cells right of the pipe, thus approximating the trace
+	aveluation of P on this boundary.  */
   double 	* DA_P_Right_P;					//	Pointer on boundary values of p at right boundary
   ///	Integral averages of Lambda in all of the cells including the
   ///	ghost cells on the boundaries.
@@ -159,10 +205,17 @@ class SemilinearSystem
   
   double *DA_Centroid;
   
-		/* current time */
+  /* current time */
   double D_Current_T;
-
+  /* current time index */
   int I_Current_T_Index;
+  /* epsilon for integration at the boundary */
+  double epsilon_boundary;
+  /* number of cells that fall into epsilon neighborhood */
+  double n_epsilon;
+  /* time slices */
+  double * time_slices;
+
   
   //	Declaration of FUNCTIONS
 		//	RETURN-VALUE void

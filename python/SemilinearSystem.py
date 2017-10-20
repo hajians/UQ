@@ -7,30 +7,49 @@ lib = cdll.LoadLibrary('lib/CWrapper.so')
 
 class SemiLinSystem(object):
 
-    def __init__(self, c_sound, t_final, x_l, x_r, dx, lambda_len):
+    def __init__(self, c_sound, t_final, x_l, x_r, dx, lambda_len, eps = 10**-2):
         '''
         Initialize a SemiLinearSystem associated to a pipe.
         '''
         self.obj = lib.CSemiLinSystem(c_double(c_sound),
                                       c_double(t_final),
                                       c_double(x_l), c_double(x_r),
-                                      c_double(dx), c_int(lambda_len)
-                                      )
+                                      c_double(dx), c_int(lambda_len),
+                                      c_double(eps) )
 
         self.boundary_p = None
-        
+        self.timeslices = None
+        self.pressure_drop = None
+
     def info(self):
         '''
         Get the info of the pipe.
         '''
         lib.CInfo(self.obj)
 
-    def run(self, coef):
+    def run(self, coef, write_bool=False):
         '''
         Compute the solution till the given end time.
         '''
-        lib.CRun(self.obj, (c_double * len(coef))(*coef) )
+        lib.CRun(self.obj, (c_double * len(coef))(*coef), c_bool(write_bool) )
 
+    def get_presure_drop(self, time_instance=10, inplace=False):
+        '''
+        compute pressure drop at certain times
+        '''
+
+        length = self._CurrentTimeIndex() + 1
+        step   = length / time_instance
+        idx = range(0,length,step)
+        
+        self.get_boundary_p()
+        
+        self.pressure_drop = self.boundary_p[idx,0] - self.boundary_p[idx,1]
+        self.timeslices = self._TimeSlices()[idx]
+
+        if inplace==False:
+            return self.pressure_drop
+        
     def get_boundary_p(self):
         '''
         Returns the boundary values of P
@@ -47,7 +66,21 @@ class SemiLinSystem(object):
         
         for i in range(0,length):
             self.boundary_p[i,:] = [data_left[i], data_right[i]]
+
+    def _TimeSlices(self):
+        '''
+        Get time slices.
+        '''
+        length = self._CurrentTimeIndex() + 1
         
+        lib.CTimeSlices.restype = POINTER(c_double)
+
+        out = np.empty([length,1], dtype=c_double)
+        for i in range(0,length):
+            out[i] = lib.CTimeSlices(self.obj)[i]
+
+        return out
+    
     def _Write2File(self, filename, append):
         '''
         Write the solution at the current time to a file.
@@ -61,17 +94,27 @@ class SemiLinSystem(object):
         return lib.CCurrentTimeIndex(self.obj)
 
     
+    
 if __name__ == "__main__":
 
     import matplotlib.pyplot as plt
     
-    pipe = SemiLinSystem(1.0, 10.0, 0.0, 1.0, .01, 0)
+    pipe = SemiLinSystem(1.0, 5.0, 0.0, 1.0, 0.005, 0, 0.05)
     pipe.info()
-    pipe.run([0.5])
 
-    pipe.get_boundary_p()
+    coef = 0.0
+    for i in range(500):
+        pipe.run([coef])
+        pipe.get_presure_drop()
+        if i%9==1:
+            plt.plot(pipe.timeslices, pipe.pressure_drop,
+                     label="cf = "+ str(coef))
+        coef += 0.001
 
-    plt.plot(pipe.boundary_p[:,0])
-    plt.plot(pipe.boundary_p[:,1])
+    print "computation done"
 
-    plt.show()
+    plt.legend(loc=2)
+    plt.show(block=True)
+
+    pipe.run([coef], True)
+    

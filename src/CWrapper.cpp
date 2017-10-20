@@ -5,14 +5,15 @@ extern "C" {
 
   SemilinearSystem* CSemiLinSystem(double c_sound, double t_final,
 				   double x_l, double x_r,
-				   double dx, int lambda_len)
+				   double dx, int lambda_len,
+				   double eps)
   {
-    return new SemilinearSystem(c_sound, t_final, x_l, x_r, dx, lambda_len);
+    return new SemilinearSystem(c_sound, t_final, x_l, x_r, dx, lambda_len, eps);
   }
 
-  void CRun(SemilinearSystem* pipe, double coef[])
+  void CRun(SemilinearSystem* pipe, double coef[], bool write2file_bool)
   {
-    pipe->Run(coef);
+    pipe->Run(coef, write2file_bool);
   }
   void CInfo(SemilinearSystem* pipe)
   {
@@ -39,5 +40,9 @@ extern "C" {
     return pipe->BoundaryValueP_Right();
   }
 
+  double* CTimeSlices(SemilinearSystem* pipe)
+  {
+    return pipe->TimeSlices();
+  }
 
 }

@@ -26,7 +26,7 @@ fig = plt.figure()
 ax = plt.axes(xlim=(df["x"].min(), df["x"].max()),
               ylim=(df["value"].min(), df["value"].max()))
 time_text = ax.text(0.05,0.9, '', transform=ax.transAxes)
-line, = ax.plot([], [], "-o", lw=2)
+line, = ax.plot([], [], "-o", lw=1)
 
 
 def init():

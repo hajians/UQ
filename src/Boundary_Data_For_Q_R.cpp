@@ -6,7 +6,7 @@ const double pi = atan2(0,-1);
 double Value_Q_R( double Time )
 {
   //return 0.5;
-  return sin( -2.0*pi*Time );
+  return 10.0 + sin( -2.0*pi*Time );
   // // Testinf purposes
   // double ReturnValue;
   // if (Time < 1/300.0)

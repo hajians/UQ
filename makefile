@@ -8,7 +8,7 @@
 CC := g++
 
 CCFLAGS := -fbounds-check -fstack-check \
-	   -pg -fPIC
+	   -pg -fPIC 
 
 # -Wl : pass option as an option to the linker
 LDFLAGS := -shared 

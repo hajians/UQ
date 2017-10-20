@@ -23,8 +23,8 @@ int main()
   //  double x_R, double Dx, int ExNum)
   // SemilinearSystem SemilinearSystem(1.0, 10.0, 0.0, 1.0, .01, 0);
 
-  SemilinearSystem pipe1 = SemilinearSystem(1.0, 10.0, 0.0, 1.0, .01, 0);
-  SemilinearSystem pipe2 = SemilinearSystem(1.0, 10.0, 0.0, 1.0, .01, 0);
+  SemilinearSystem pipe1 = SemilinearSystem(1.0, 10.0, 0.0, 1.0, .01, 0, 0.1);
+  SemilinearSystem pipe2 = SemilinearSystem(1.0, 10.0, 0.0, 1.0, .01, 0, 0.1);
 
   pipe1.info();
 

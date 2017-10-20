@@ -6,5 +6,5 @@ const double pi = atan2(0,-1);
 double Value_Q_0( double coordinate )
 {
   //	return 120.0;
-  return sin( 2*pi*coordinate );
+  return 10.0 + sin( 2*pi*coordinate );
 }

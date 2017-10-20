@@ -9,7 +9,8 @@ SemilinearSystem::SemilinearSystem(double D_SpeedOfSound_Arg,
 				   double D_Boundary_Position_Left_Arg,
 				   double D_Boundary_Position_Right_Arg,
 				   double D_Delta_x_Arg,
-				   int I_Lambda_Expansion_Length_Arg)
+				   int I_Lambda_Expansion_Length_Arg,
+				   double eps)
 {
 	/**
 	*	@brief		Constructor of the class 'SemilinearSystem'
@@ -63,15 +64,15 @@ SemilinearSystem::SemilinearSystem(double D_SpeedOfSound_Arg,
   
   
   //	Declaration of variables TYPE INT
-  I_Lambda_Expansion_Length	=	I_Lambda_Expansion_Length_Arg; //	Number of coefficients that are included in the truncated representation of the friction coefficent Lambda
-  I_NumberOfTimeSteps 		=	D_TerminalTime/D_Delta_t;												//	#TimeSteps
-  I_NumberOfCells 			=	abs(D_Boundary_Position_Right - D_Boundary_Position_Left)/D_Delta_x;	//	#Cells
+  I_Lambda_Expansion_Length = I_Lambda_Expansion_Length_Arg; //	Number of coefficients that are included in the truncated representation of the friction coefficent Lambda
+  I_NumberOfTimeSteps = D_TerminalTime/D_Delta_t;												//	#TimeSteps
+  I_NumberOfCells = abs(D_Boundary_Position_Right - D_Boundary_Position_Left)/D_Delta_x;	//	#Cells
 
   
   //	DATA-Stores
   //	(the public .run - method will operate on DA_P_Values_P and DA_P_Values_Q)
-  DA_P_Values_P 				=	new double [I_NumberOfCells + 2];
-  DA_P_Values_Q				=	new double [I_NumberOfCells + 2];
+  DA_P_Values_P = new double [I_NumberOfCells + 2];
+  DA_P_Values_Q = new double [I_NumberOfCells + 2];
 	
   //	(the public methods that represent the observation operator will act on the elements of these vectors)
   DA_P_Left_P  = new double [I_NumberOfTimeSteps + 1];
@@ -98,6 +99,18 @@ SemilinearSystem::SemilinearSystem(double D_SpeedOfSound_Arg,
   // current time index
   I_Current_T_Index = 0;
 
+  // epsilon for the boundary
+  epsilon_boundary = eps;
+  // number of cells that fall into epsilon neighborhood
+  n_epsilon = (int) (eps / D_Delta_x);
+
+  //
+  time_slices = new double [I_NumberOfTimeSteps + 1];
+  time_slices[0] = 0.0;
+    
+  for (int i=1; i<=I_NumberOfTimeSteps; i++){
+    time_slices[i] = time_slices[i-1] + D_Delta_t;
+  }
 }
 
 
@@ -311,7 +324,7 @@ void SemilinearSystem::Set_Lambda_Averages( double* DA_P_Lambda_AV, double* DA_P
 }
 
 
-void SemilinearSystem::Run( double DA_P_Lambda_Coefficients[] )
+void SemilinearSystem::Run( double DA_P_Lambda_Coefficients[], bool write2file_bool )
 {
   /**
    *	@brief function that solves the PDE-System for a
@@ -361,7 +374,9 @@ void SemilinearSystem::Run( double DA_P_Lambda_Coefficients[] )
   
   // writing the values
   char filename[100] = "output";
-  Write2File(filename, false);
+  if (write2file_bool){
+    Write2File(filename, false);
+  }
   
   //	Solving the forward problem with current friction coefficient
   //	Loop over timesteps of the discretization
@@ -398,10 +413,8 @@ void SemilinearSystem::Run( double DA_P_Lambda_Coefficients[] )
       //	Updating P on the ghost cells according to the flow of P and Q
       DA_Values_P_Intermediate[0]						=	DA_P_Values_P[1] - DA_P_Values_Q[1]/D_SpeedOfSound + DA_Values_Q_Intermediate[0]/D_SpeedOfSound - (D_Delta_t/D_SpeedOfSound)*DA_P_Lambda_AV[1]*FrictionFunction( DA_P_Values_P[1], DA_P_Values_Q[1] );
       DA_Values_P_Intermediate[I_NumberOfCells + 1]	=	DA_P_Values_P[I_NumberOfCells] + DA_P_Values_Q[I_NumberOfCells]/D_SpeedOfSound - DA_Values_Q_Intermediate[I_NumberOfCells + 1]/D_SpeedOfSound + (D_Delta_t/D_SpeedOfSound)*DA_P_Lambda_AV[I_NumberOfCells]*FrictionFunction( DA_P_Values_P[I_NumberOfCells], DA_P_Values_Q[I_NumberOfCells] );
-		
-      //	Storing the boundary values of P in the corresponding vectors
-      DA_P_Left_P[I_TimeStepCount]		=	DA_Values_P_Intermediate[0];
-      DA_P_Right_P[I_TimeStepCount]		=	DA_Values_P_Intermediate[I_NumberOfCells + 1];
+	        
+      
       
       //	Overwriting 'DA_P_Values_Q' and 'DA_P_Values_P'
       for (int I_CellCount = 0; I_CellCount <= I_NumberOfCells + 1; ++I_CellCount)
@@ -411,11 +424,30 @@ void SemilinearSystem::Run( double DA_P_Lambda_Coefficients[] )
 	  //	Calculating the value of Q
 	  DA_P_Values_Q[I_CellCount]					=	DA_Values_Q_Intermediate[I_CellCount];
 	}
+
+      // Storing the boundary values of P in the corresponding vectors
+      DA_P_Left_P[I_TimeStepCount] = 0.0;
+      DA_P_Right_P[I_TimeStepCount] = 0.0;
+	
+      for (int i=0; i<=n_epsilon; i++){
+	DA_P_Left_P[I_TimeStepCount]  += pow( DA_P_Values_P[i], 2);
+	DA_P_Right_P[I_TimeStepCount] += pow( DA_P_Values_P[I_NumberOfCells + 1 - i], 2);
+      }
+      
+      DA_P_Left_P[I_TimeStepCount] = sqrt(DA_P_Left_P[I_TimeStepCount] * D_Delta_x);
+      DA_P_Right_P[I_TimeStepCount] = sqrt(DA_P_Right_P[I_TimeStepCount] * D_Delta_x);
+
+      /* pointwise storage of P */
+      // DA_P_Left_P[I_TimeStepCount]		=	DA_Values_P_Intermediate[0];
+      // DA_P_Right_P[I_TimeStepCount]		=	DA_Values_P_Intermediate[I_NumberOfCells + 1];
+
       // upodate the time
       D_Current_T = D_Current_T + D_Delta_t;
       I_Current_T_Index += 1;
       // writing the values
-      Write2File(filename, true);
+      if (write2file_bool){
+	Write2File(filename, true);
+      }
     }
   
 }
@@ -758,7 +790,7 @@ void SemilinearSystem::info()
 
   cout << "Current time = " << D_Current_T << endl;
   cout << "Final time = " << D_TerminalTime << endl;
-  
+  cout << "Epsilon for the boundary = " << epsilon_boundary << " N_epsilon: " << n_epsilon << endl;
 }
 
 int SemilinearSystem::CurrentTimeIndex()
@@ -789,3 +821,14 @@ double* SemilinearSystem::BoundaryValueP_Right()
 
   return DA_P_Right_P;
 }
+
+double* SemilinearSystem::TimeSlices()
+{
+  /**
+   * @brief returns the time slices
+   * @author Soheil Hajian
+   */
+
+  return time_slices;
+}
+   
