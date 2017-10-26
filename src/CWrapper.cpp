@@ -40,9 +40,34 @@ extern "C" {
     return pipe->BoundaryValueP_Right();
   }
 
+  /**
+   * Gives back an array containing the time slices.
+   */
   double* CTimeSlices(SemilinearSystem* pipe)
   {
     return pipe->TimeSlices();
   }
 
+  /**
+   * Gives back the Friction function averaged over the mesh.
+   */
+  double* CLambda_Average(SemilinearSystem* pipe, double DA_P_Lambda_Coefficients_GIVEN[])
+  {
+    return pipe->LambdaAverage(DA_P_Lambda_Coefficients_GIVEN);
+  }
+
+  /**
+   * Gets the current friction function averaged over the mesh. This is updated after each Run command.
+   */
+  double* CGetLambda_Average(SemilinearSystem* pipe)
+  {
+    return pipe->SendLambdaAverage();
+  }
+  /**
+   * Gives back the number of cells.
+   */
+  int CNumberofCells(SemilinearSystem* pipe)
+  {
+    return pipe->NumberofCells();
+  }
 }

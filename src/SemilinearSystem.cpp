@@ -68,7 +68,6 @@ SemilinearSystem::SemilinearSystem(double D_SpeedOfSound_Arg,
   I_NumberOfTimeSteps = D_TerminalTime/D_Delta_t;												//	#TimeSteps
   I_NumberOfCells = abs(D_Boundary_Position_Right - D_Boundary_Position_Left)/D_Delta_x;	//	#Cells
 
-  
   //	DATA-Stores
   //	(the public .run - method will operate on DA_P_Values_P and DA_P_Values_Q)
   DA_P_Values_P = new double [I_NumberOfCells + 2];
@@ -82,7 +81,7 @@ SemilinearSystem::SemilinearSystem(double D_SpeedOfSound_Arg,
   //	The following vector will contain the integral average of LAMBDA (the truncated representation)
   DA_P_Lambda_AV = new double [I_NumberOfCells + 2];
   //	Initialization of the array storing the coefficients of the expansion of the radmon field
-  DA_P_Lambda_Coefficients = new double [I_Lambda_Expansion_Length + 1];
+  DA_P_Lambda_Coefficients = new double [I_Lambda_Expansion_Length];
 
   DA_Centroid = new double[I_NumberOfCells];
   
@@ -111,6 +110,10 @@ SemilinearSystem::SemilinearSystem(double D_SpeedOfSound_Arg,
   for (int i=1; i<=I_NumberOfTimeSteps; i++){
     time_slices[i] = time_slices[i-1] + D_Delta_t;
   }
+
+  /* domain length */
+  domain_length = D_Boundary_Position_Right_Arg - D_Boundary_Position_Left_Arg;
+
 }
 
 
@@ -263,7 +266,8 @@ void SemilinearSystem::Set_IC_P( double* DA_P_Values_P, int I_NumberOfCells, dou
 }
 
 //	Definition of the function that provides the integral average of the friction coefficient for the cells
-void SemilinearSystem::Set_Lambda_Averages( double* DA_P_Lambda_AV, double* DA_P_Lambda_Coefficients, int I_Lambda_Expansion_Length, int I_NumberOfCells, double D_Boundary_Position_Left, double D_Delta_x  )
+void SemilinearSystem::Set_Lambda_Averages( double* DA_P_Lambda_AV, double* DA_P_Lambda_Coefficients,
+					    int I_Lambda_Expansion_Length, int I_NumberOfCells, double D_Boundary_Position_Left, double D_Delta_x  )
 {	
 	/**
 	*	@brief	calculates the integral averages of the friction coefficient in the computational cells
@@ -294,7 +298,8 @@ void SemilinearSystem::Set_Lambda_Averages( double* DA_P_Lambda_AV, double* DA_P
 	//	The method computes the integral average of the friction coefficient
 	//	FIRST VERSION: Simple average of Lamdba at the boudnary of the corresponding integral.
 	//	FURTERH PLANS: Increase the accuracy of the integration process. Since Lambda is expected to be in L^\infty, discontinuities will happem!
-	
+
+	int counter = 0;
 	
 	//	Calculating the integral average on the cells within the pipe.
 	//	Loop over interior cells
@@ -303,14 +308,44 @@ void SemilinearSystem::Set_Lambda_Averages( double* DA_P_Lambda_AV, double* DA_P
 		//	Initialization of the integral average in cell 'i'
 		DA_P_Lambda_AV[i]	=	0.0;
 		//	Loop over coefficients of the expansion
-		for (int j = 0; j < I_Lambda_Expansion_Length + 1; ++j)
+
+		//	j = 0
+		Increment				=	( Value_Lambda_Base(0, xx_L) + Value_Lambda_Base(0, xx_R) )/2.0;
+		//	Update of Lamdba-Average
+		DA_P_Lambda_AV[i]		=	DA_P_Lambda_AV[i] + DA_P_Lambda_Coefficients[0]*Increment;
+
+		for (int j = 1; j < I_Lambda_Expansion_Length; j+=2)
 		{
-			//	Evaluating the average of basis function 'j' in interval 'i'
-			Increment				=	( Value_Lambda_Base(j, xx_L) + Value_Lambda_Base(j, xx_R) )/2.0;
-			
-			//	Update of Lamdba-Average
-			DA_P_Lambda_AV[i]		=	DA_P_Lambda_AV[i] + DA_P_Lambda_Coefficients[j]*Increment;
+		  counter += 1;
+		//	Evaluating the average of basis function 'j' in interval 'i'
+		  Increment			=	( Value_Lambda_Base_Sin(counter, xx_L, domain_length) + Value_Lambda_Base_Sin(counter, xx_R, domain_length) )/2.0;
+		//	Update of Lamdba-Average
+		  DA_P_Lambda_AV[i]		=	DA_P_Lambda_AV[i] + DA_P_Lambda_Coefficients[j]*Increment * ( 1.0 / pow(counter,2) );
 		}
+		counter = 0;
+		
+		/* for cos */
+		for (int j = 2; j < I_Lambda_Expansion_Length + 1; j+=2)
+		{
+		  counter += 1;
+		  //	Evaluating the average of basis function 'j' in interval 'i'
+		  Increment			=	( Value_Lambda_Base_Cos(counter, xx_L, domain_length) + Value_Lambda_Base_Cos(counter, xx_R, domain_length) )/2.0;
+		  //	Update of Lamdba-Average
+		  DA_P_Lambda_AV[i]		=	DA_P_Lambda_AV[i] + DA_P_Lambda_Coefficients[j]*Increment * ( 1.0 / pow(counter,2) );
+		}
+
+		/**
+		 * A bug was fixed using this script.
+		  if (abs(DA_P_Lambda_AV[i]) > 1000.0){
+		    cout << "error in Set_... : " << I_Lambda_Expansion_Length << endl;
+		    for (int j=1; j < I_Lambda_Expansion_Length + 1; j+=2){ cout << "j: " << j << "," << DA_P_Lambda_Coefficients[j] << " "; }
+		    for (int j=2; j < I_Lambda_Expansion_Length + 1; j+=2){ cout << "j: " << j << "," << DA_P_Lambda_Coefficients[j] << " "; }
+		    cout << endl;
+		  }
+		*/
+
+		counter = 0;
+
 		//	Re-Defining the values of the interval boundaries
 		xx_L						=	xx_R;
 		xx_R						=	xx_R + D_Delta_x;
@@ -785,12 +820,14 @@ void SemilinearSystem::info()
    * @author Soheil Hajian
    */
   cout << "Omega = " << "(" << D_Boundary_Position_Left << "," << D_Boundary_Position_Right << ")" << endl;
+  cout << "Length of the domain = " << domain_length << endl;
   cout << "Dt = " << D_Delta_t << endl;
   cout << "Dx = " << D_Delta_x << endl;
-
+  cout << "Number of cells = " << I_NumberOfCells << endl;
   cout << "Current time = " << D_Current_T << endl;
   cout << "Final time = " << D_TerminalTime << endl;
   cout << "Epsilon for the boundary = " << epsilon_boundary << " N_epsilon: " << n_epsilon << endl;
+
 }
 
 int SemilinearSystem::CurrentTimeIndex()
@@ -831,4 +868,36 @@ double* SemilinearSystem::TimeSlices()
 
   return time_slices;
 }
-   
+
+double* SemilinearSystem::LambdaAverage(double DA_P_Lambda_Coefficients_GIVEN[])
+{
+  /**
+   * return compute and return LambdaAverage
+   */
+
+  Set_Lambda_Averages( DA_P_Lambda_AV, DA_P_Lambda_Coefficients_GIVEN,
+		       I_Lambda_Expansion_Length, I_NumberOfCells,
+		       D_Boundary_Position_Left, D_Delta_x  );
+
+  return DA_P_Lambda_AV;
+
+}
+
+double* SemilinearSystem::SendLambdaAverage()
+{
+  /**
+   * send the current DA_P_Lambda_AV: It is updated after every SemilinearSystem::Run
+   */
+  return DA_P_Lambda_AV;
+}
+
+int SemilinearSystem::NumberofCells()
+{
+  /** 
+   * send back the number of cells
+   */
+  return I_NumberOfCells;
+  
+}
+
+

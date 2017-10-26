@@ -17,10 +17,17 @@ class SemiLinSystem(object):
                                       c_double(dx), c_int(lambda_len),
                                       c_double(eps) )
 
+        lib.CNumberofCells.restype = c_int
+        self.NumberofCells = lib.CNumberofCells(self.obj)
+        
+        self.lambda_len = lambda_len
+        
         self.boundary_p = None
         self.timeslices = None
         self.pressure_drop = None
 
+        self.mesh = [x_l + i*dx for i in range(self.NumberofCells)]
+        
     def info(self):
         '''
         Get the info of the pipe.
@@ -31,14 +38,17 @@ class SemiLinSystem(object):
         '''
         Compute the solution till the given end time.
         '''
-        lib.CRun(self.obj, (c_double * len(coef))(*coef), c_bool(write_bool) )
+        if self.lambda_len==len(coef):
+            lib.CRun(self.obj, (c_double * len(coef))(*coef), c_bool(write_bool) )
+        else:
+            print "Error in run: coef does not have correct size"
 
     def get_presure_drop(self, time_instance=10, inplace=False):
         '''
-        compute pressure drop at certain times
+        compute pressure drop at certain times.
         '''
 
-        length = self._CurrentTimeIndex() + 1
+        length = self._CurrentTimeIndex()
         step   = length / time_instance
         idx = range(0,length,step)
         
@@ -52,7 +62,7 @@ class SemiLinSystem(object):
         
     def get_boundary_p(self):
         '''
-        Returns the boundary values of P
+        Returns the boundary values of P.
         '''
         length = self._CurrentTimeIndex() + 1
 
@@ -67,9 +77,35 @@ class SemiLinSystem(object):
         for i in range(0,length):
             self.boundary_p[i,:] = [data_left[i], data_right[i]]
 
+    def get_lambda_average(self, vec_coef):
+        '''
+        Get the lambda average array
+        '''
+
+        self.lambda_avg = np.empty(self.NumberofCells, dtype=c_double)
+
+        lib.CLambda_Average.restype = POINTER(c_double)
+
+        for i in range(self.NumberofCells):
+            self.lambda_avg[i] = lib.CLambda_Average(self.obj, (c_double * len(vec_coef))(*vec_coef))[i+1]
+
+    def get_current_lambda_average(self):
+        '''
+        Get the lambda average array. This is updated after each self.run command.
+        '''
+
+        self.lambda_avg = np.empty(self.NumberofCells, dtype=c_double)
+
+        lib.CGetLambda_Average.restype = POINTER(c_double)
+
+        for i in range(self.NumberofCells):
+            self.lambda_avg[i] = lib.CGetLambda_Average(self.obj)[i+1]
+
+        
+        
     def _TimeSlices(self):
         '''
-        Get time slices.
+        Get the time slices.
         '''
         length = self._CurrentTimeIndex() + 1
         
@@ -98,23 +134,31 @@ class SemiLinSystem(object):
 if __name__ == "__main__":
 
     import matplotlib.pyplot as plt
-    
-    pipe = SemiLinSystem(1.0, 5.0, 0.0, 1.0, 0.005, 0, 0.05)
-    pipe.info()
 
+    pipe = SemiLinSystem(1.0, 5.0, 0.0, 1.0, 0.005, 7, 0.05)
+    pipe.info()
+    # pipe.run([0.05, 0.01, 0.001], write_bool=True)
+    coef = [0.05, 0.01, 0.0, 0.04, 0.0, 0.0, 0.0]
+    pipe.get_lambda_average(coef)
+    
+    # plt.plot(range(pipe.NumberofCells), pipe.lambda_avg, "-o")
+    # plt.show(block=False)
+    
     coef = 0.0
-    for i in range(500):
-        pipe.run([coef])
+    for i in range(0,300):
+        vec_c = [0.05, 0.01, 0.0, 0.04, 0.0, coef, 0.0]
+        pipe.run(vec_c)
+        pipe.get_lambda_average(vec_c)
         pipe.get_presure_drop()
-        if i%9==1:
-            plt.plot(pipe.timeslices, pipe.pressure_drop,
+        if i%10==1:
+            plt.plot(pipe.timeslices, pipe.pressure_drop, "-o",
                      label="cf = "+ str(coef))
+            # plt.plot(range(pipe.NumberofCells), pipe.lambda_avg, "-")
         coef += 0.001
 
-    print "computation done"
+    # print "computation done"
 
-    plt.legend(loc=2)
+    plt.legend(bbox_to_anchor=(1.0, 1), loc=2, borderaxespad=0.0)
     plt.show(block=True)
 
-    pipe.run([coef], True)
-    
+#    pipe.run([coef], True)

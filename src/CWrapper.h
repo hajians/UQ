@@ -22,7 +22,11 @@
     double* CBoundaryValueP_Right(SemilinearSystem* pipe);
 
     double* CTimeSlices(SemilinearSystem* pipe);
+
+    double* CLambda_Average(SemilinearSystem* pipe, double DA_P_Lambda_Coefficients_GIVEN[]);
+    double* CGetLambda_Average(SemilinearSystem* pipe);
     
+    int CNumberofCells(SemilinearSystem* pipe);
 #ifdef __cplusplus
   }
 #endif

@@ -102,7 +102,9 @@ class SemilinearSystem
   double* BoundaryValueP_Left();
   double* BoundaryValueP_Right();
   double* TimeSlices();
-  
+  double* LambdaAverage(double DA_P_Lambda_Coefficients_GIVEN[]);
+  double* SendLambdaAverage();
+  int NumberofCells();
  private:
   //	Declaration of VARIABLES
   //	TYPE: double - single variable
@@ -215,13 +217,14 @@ class SemilinearSystem
   double n_epsilon;
   /* time slices */
   double * time_slices;
-
+  /* length of the domain */
+  double domain_length;
   
   //	Declaration of FUNCTIONS
 		//	RETURN-VALUE void
   void Set_IC_Q( double* DA_P_Values_Q, int I_NumberOfCells, double D_Boundary_Position_Left, double D_Delta_x );	//	Stores the integral averages of the initial data for q on the array 'DA_P_Values_Q'
   void Set_IC_P( double* DA_P_Values_P, int I_NumberOfCells, double D_Boundary_Position_Left, double D_Delta_x );	//	Stores the integral averages of the initial data for p on the array 'DA_P_Values_P'
-  void Set_Lambda_Averages( double* DA_P_Lambda_AV, double* DA_P_Lambda_Coefficients, int I_Lambda_Expansion_Length, int I_NumberOfCells, double D_Boundary_Position_Left, double D_Delta_x  );
+  void Set_Lambda_Averages( double*, double*, int, int, double, double  );
   
   //	RETURN-VALUE double		
   double 	Read_BoundaryValues_Q_Left(double D_EvaluationTime);		//	HANDSHAKE: evaluation of the boundary value of q at the 'left' boundary at time t
