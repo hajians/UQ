@@ -12,11 +12,11 @@ from numpy import empty
 from math  import isnan
 
 # stochastic settings
-uni_prior_down = [0.0, 0.0,0.0, 0.0, 0.0]
-uni_prior_up   = [0.5, 0.05,0.05, 0.05, 0.05]
+uni_prior_down = [0.0, 0.0,0.0, 0.0, 0.0, 0.0, 0.0]
+uni_prior_up   = [0.5, 0.05,0.05, 0.05, 0.05, 0.05, 0.05]
 sigma_normal   = 0.05
-initial_point_mcmc = [0.45, 0.04, 0.04, 0.04, 0.04]
-expan_coef = 5
+initial_point_mcmc = [0.45, 0.04, 0.04, 0.04, 0.04, 0.04, 0.04]
+expan_coef = 7
 
 # physical settings
 c_sound = 1.0
@@ -26,7 +26,7 @@ dx = 0.005
 boundary_eps = 0.05
 
 # true friction coefficient
-true_friction = [0.075, 0.015, 0.035, 0.025, 0.035]
+true_friction = [0.075, 0.015, 0.035, 0.025, 0.035, 0.001, 0.03]
 time_ins = 20
 
 # construct and run the true pipe
@@ -94,9 +94,6 @@ def likelihood(x):
 
     out = exp( -0.5 * dot(S-y_obs, S-y_obs) )
 
-    if isnan(out):
-        print "Mistake"
-        print x
     return out
     
 def density(x):
@@ -119,13 +116,9 @@ if __name__ == "__main__":
     plt.show()
     
     mcmc = MCMC(density, proposal_density, draw_from_proposal, initial_point_mcmc)
-    # print mcmc.density(0.051)
 
     mcmc.run(max_iter = 10000, burning=500)
     mcmc.write("samples-fric-0.075.dat")
-
-    # plt.hist(mcmc.density_samples, bins=20)
-    # plt.show()
 
     for idx, coef in enumerate(mcmc.density_samples):
         pipe.get_lambda_average(coef)

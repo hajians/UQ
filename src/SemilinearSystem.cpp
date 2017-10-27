@@ -819,15 +819,28 @@ void SemilinearSystem::info()
    * @brief giving info about the pipe in the terminal
    * @author Soheil Hajian
    */
-  cout << "Omega = " << "(" << D_Boundary_Position_Left << "," << D_Boundary_Position_Right << ")" << endl;
-  cout << "Length of the domain = " << domain_length << endl;
-  cout << "Dt = " << D_Delta_t << endl;
-  cout << "Dx = " << D_Delta_x << endl;
-  cout << "Number of cells = " << I_NumberOfCells << endl;
-  cout << "Current time = " << D_Current_T << endl;
-  cout << "Final time = " << D_TerminalTime << endl;
-  cout << "Epsilon for the boundary = " << epsilon_boundary << " N_epsilon: " << n_epsilon << endl;
-
+  cout << setfill ('=') << setw(50) << right << " info ==" << endl;
+  cout << setfill ('_') << setw(35) << left << "Omega "
+       << left << "(" << D_Boundary_Position_Left << "," << D_Boundary_Position_Right << ")" << endl;
+  cout << setw(35) << left << "Length of the domain "
+       << left << domain_length << endl;
+  cout << setw(35) << left << "Dt "
+       << left << D_Delta_t << endl;
+  cout << setw(35) << left << "Dx "
+       << left << D_Delta_x << endl;
+  cout << setw(35) << left << "Number of cells "
+       << left << I_NumberOfCells << endl;
+  cout << setw(35) << left << "Current time "
+       << left << D_Current_T << endl;
+  cout << setw(35) << left << "Final time "
+       << left << D_TerminalTime << endl;
+  cout << setw(35) << left << "Epsilon for the boundary "
+       << left << epsilon_boundary << endl;
+  cout << setw(35) << left << "N_epsilon "
+       << left << n_epsilon << endl;
+  cout << setw(35) << left << "Size of friction coef. vec. "
+       << left << I_Lambda_Expansion_Length << endl;
+  cout << setfill ('=') << setw(50) << right << "" << endl;
 }
 
 int SemilinearSystem::CurrentTimeIndex()

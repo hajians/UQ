@@ -33,6 +33,7 @@
 #ifndef SEMILINEARSYSTEM_H
 #define SEMILINEARSYSTEM_H
 
+#include <iomanip>
 #include <iostream>
 #include <fstream>
 #include <cmath>

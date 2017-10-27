@@ -52,6 +52,7 @@ class MCMC(object):
                 print "error in MCMC.run:"
                 print self.density(x_prop), x_prop
                 print self.density(x_old), x_old
+                alpha = 0.0
                 
             if ( (alpha > self.accept) & (it > burning) ):
                 x_old = x_prop
