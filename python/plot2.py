@@ -7,7 +7,7 @@ from matplotlib import animation
 
 from python.uq import *
 
-filename = "samples-fric-0.075.dat"
+filename = "samples-fric-0.075-expan-7.dat"
 df = pd.read_csv(filename, header=None)
 
 pipe_true.info()
@@ -51,5 +51,7 @@ def update(i):
     return lines
 
 anim = animation.FuncAnimation(fig, update, init_func=init,
-                               frames=len(mcmc.density_samples), blit=True)
+                               frames=len(mcmc.density_samples),
+                               repeat=True, repeat_delay=5000,
+                               blit=True)
 plt.show()
