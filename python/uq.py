@@ -1,7 +1,47 @@
 #! /usr/bin/python2.7
 
-'''
-Implements UQ for a pipe
+'''A script to run UQ for a pipe.
+
+Parameters
+----------
+
+expan_coef: int
+size of friction coefficient vector
+
+uni_prior_down: float * expan_coef
+lower bound for the uniform prior
+
+uni_prior_up: float * expan_coef
+upper bound for the uniform prior
+
+initial_point_mcmc: float * expan_coef
+initial point in the MCMC sampler
+
+c_sound: float
+sound speed
+
+t_final: float
+final time
+
+x_l: float
+left boundary of the domain
+
+x_r: float
+right boundary of the domain
+
+dx: float
+mesh size
+
+boundary_eps: float
+a number for computing pressure drop at both ends of the pipe
+
+pipe_true: SemiLinSystem
+an object that represents and contains attributes of the true pipe
+
+pipe: SemiLinSystem 
+an object that represents and contains attributes
+of a pipe used during MCMC for sampling
+
 '''
 
 from python.mcmc import MCMC
@@ -14,6 +54,7 @@ from math  import isnan
 # stochastic settings
 uni_prior_down = [0.0, 0.0,0.0, 0.0, 0.0, 0.0, 0.0]
 uni_prior_up   = [0.5, 0.05,0.05, 0.05, 0.05, 0.05, 0.05]
+
 sigma_normal   = 0.05
 initial_point_mcmc = [0.45, 0.04, 0.04, 0.04, 0.04, 0.04, 0.04]
 expan_coef = 7
@@ -32,9 +73,8 @@ time_ins = 20
 # construct and run the true pipe
 pipe_true = SemiLinSystem(c_sound, t_final, x_l, x_r, dx, expan_coef, boundary_eps)
 pipe_true.run(true_friction)
-# y_obs = normal(0.0, 0.1, time_ins) + \
-#         pipe_true.get_presure_drop(time_instance=time_ins, inplace=False)
-y_obs = pipe_true.get_presure_drop(time_instance=time_ins, inplace=False)
+y_obs = normal(0.0, 0.1, time_ins) + \
+        pipe_true.get_presure_drop(time_instance=time_ins, inplace=False)
 
 # construct a pipe for computation
 pipe = SemiLinSystem(c_sound, t_final, x_l, x_r, dx, expan_coef, boundary_eps)
@@ -42,10 +82,15 @@ pipe = SemiLinSystem(c_sound, t_final, x_l, x_r, dx, expan_coef, boundary_eps)
 def uni_prior(x):
     '''
     uniform prior
+
+    Parameters
+    ----------
+
+    x: float * len(x)
     '''
 
     volume = 1.0
-    
+
     for i in range(len(x)):
         volume *= abs(uni_prior_up[i] - uni_prior_down[i])
 
@@ -60,7 +105,14 @@ def uni_prior(x):
 def proposal_density(new, old):
     '''
     proposal density function
+
+    Parameters
+    ----------
+    new: float * len(new)
+
+    old: float * len(old)
     '''
+
     length = len(new)
 
     out = empty(length, dtype=float)
@@ -74,11 +126,21 @@ def proposal_density(new, old):
 def draw_from_proposal(old):
     '''
     draw from the proposal
+
+    Parameters
+    ----------
+    old: float * len(old)
     '''
-    return normal(old, sigma_normal)
+    return normal(old, sigma_normal, size=len(old))
 
 def likelihood(x):
+    '''
+    computes the likelihood function
 
+    Parameters
+    ----------
+    x: float * len(x)
+    '''
     # check 
     for i in x:
         if i<0: return 0.0
@@ -98,7 +160,13 @@ def likelihood(x):
     
 def density(x):
     '''
-    density function for the MCMC
+    density function for the MCMC: 
+    multiplication of the likelihood and the prior distribution
+
+    Parameters
+    ----------
+    x: float * len(x)
+
     '''
     PRIOR = uni_prior(x)
     if PRIOR > 10.0**-8:
@@ -109,17 +177,35 @@ def density(x):
 if __name__ == "__main__":
 
     import matplotlib.pyplot as plt
-    
+
+    ### Plotting
+    # get the info of the true pipe
     pipe_true.info()
-    plt.plot(pipe_true.timeslices, pipe_true.pressure_drop)
-    plt.plot(pipe_true.timeslices, y_obs)
-    plt.show()
+    # plot the pressure drop of the true pressure drop
+    plt.plot(pipe_true.timeslices, pipe_true.pressure_drop,
+             marker="o", label="true pressure drop")
+    # plot the noisy pressure drop
+    plt.plot(pipe_true.timeslices, y_obs, linestyle="--", marker="x",
+             label="noisy pressure drop")
+    plt.xlabel("$t_n$", fontsize=24)
+    plt.ylabel("$\delta p_h^n$", fontsize=24)
+    plt.yticks(fontsize=20)
+    plt.xticks(fontsize=20)
+    plt.legend(loc=4, borderaxespad=0.0,
+               prop={'size': 20}, frameon=False)
+    plt.tight_layout()
+    plt.show(block=True)
+
     
+    ### instantiate an MCMC sampler
     mcmc = MCMC(density, proposal_density, draw_from_proposal, initial_point_mcmc)
 
-    mcmc.run(max_iter = 10000, burning=500)
-    mcmc.write("samples-fric-0.075.dat")
+    # run the MCMC sample
+    mcmc.run(max_iter = 10000, burning=1000)
+    # write the samples into a file
+    #mcmc.write("samples-N3-fric0.075-wNoise.dat")
 
+    # plotting the sampled friction coefficients
     for idx, coef in enumerate(mcmc.density_samples):
         pipe.get_lambda_average(coef)
         plt.plot(pipe.mesh, pipe.lambda_avg)
@@ -128,19 +214,29 @@ if __name__ == "__main__":
     plt.plot(pipe_true.mesh, pipe_true.lambda_avg, '--',
              color="black", linewidth=5.0, label="True friction function")
 
-    plt.legend(bbox_to_anchor=(1.0, 1), loc=1, borderaxespad=0.0)
-    plt.xlabel("$x$", fontsize=22)
-    plt.ylabel("$\lambda(x)$", fontsize=22)
-    plt.show(block=False)
+    plt.legend(loc=1, borderaxespad=0.0,
+               prop={'size': 20}, frameon=False)
+    plt.yticks(fontsize=20)
+    plt.xticks(fontsize=20)
+    plt.xlabel("$x$", fontsize=24)
+    plt.ylabel("$\lambda(x)$", fontsize=24)
+    plt.tight_layout()
+    #plt.savefig("../../fig_fric_func.pgf")
+    plt.show(block=True)
 
+    # samples_1d = []
+    # for sample in mcmc.density_samples:
+    #     samples_1d.append(sample[0])
 
-# pipes = []
-# for i in range(1000):
-#     pipes.append(SemiLinSystem(c_sound, t_final, x_l, x_r, dx, expan_coef, boundary_eps)) 
-# for pipe in pipes:
-#     pipe.run([true_friction])
-#     pipe.get_presure_drop(time_instance=time_ins)
-#     plt.plot(pipe.timeslices, pipe.pressure_drop, "-o")    
+    # plt.xlabel("$\lambda$", fontsize=24)
+    # plt.ylabel("normalized frequency", fontsize=24)
+    # plt.hist(samples_1d, bins=100, normed=True)
+    # plt.xticks([0.0, 0.2, 0.3, 0.4, 0.5]+ true_friction,
+    #            fontsize=20)
+    # plt.yticks(fontsize=20)
+    # plt.gca().set_xlim([0.0,0.45])
+    # plt.tight_layout()
+    # plt.show(block=False)
+    # plt.savefig("../../figure_6.pgf")
 
-# plt.show(block=False)
     

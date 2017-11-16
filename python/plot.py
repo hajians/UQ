@@ -1,5 +1,10 @@
 #! /usr/bin/env python2.7
 
+'''This script plot and animates the time-dependent solution obtained
+from the forward solver.
+
+'''
+
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt

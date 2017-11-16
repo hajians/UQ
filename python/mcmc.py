@@ -1,19 +1,29 @@
 #! /usr/bin/env python2.7
 
+from numpy import random
+import time
+
+# change the seed
+random.seed(int(time.time()))
+
 class MCMC(object):
     '''
-    MCMC implements Monte-Carlo-Markov-Chain algorithms
+    MCMC implements Markov-Chain-Monte-Carlo algorithms.
     '''
 
-    def __init__(self, Density, Proposal, Drawing_func, initial, accept=0.5):
+    def __init__(self, Density, Proposal, Drawing_func, initial):
         '''
         Initialize an MCMC algorithm.
 
+        Parameters
+        ----------
         Density : density function whose normalization constant is not known
 
         Proposal: proposal function
 
         Drawing_func: a function that draws sample from Proposal
+
+        initial: the initial sample of the MCMC algorithm
         
         '''
         self.density = Density
@@ -26,13 +36,24 @@ class MCMC(object):
 
         self.density_samples = []
 
-        self.accept = accept
-
         self.num_proposals = 0
-        
+
+
     def run(self, max_iter = 2000, burning=200):
-        '''
-        run MCMC.
+        '''run MCMC.
+
+        Parameters
+        ----------
+
+        max_iter: int
+        
+        maximum number of iterations on this call
+        
+        burning: int 
+
+        ignores the initial samples upto the given number in the
+        Markov Chain.
+
         '''
 
         if len(self.density_samples)>0:
@@ -54,7 +75,7 @@ class MCMC(object):
                 print self.density(x_old), x_old
                 alpha = 0.0
                 
-            if ( (alpha > self.accept) & (it > burning) ):
+            if ( (alpha > random.uniform(0.0,1.0)) & (it > burning) ):
                 x_old = x_prop
                 self.density_samples.append(x_prop)
 
@@ -66,7 +87,13 @@ class MCMC(object):
             
     def write(self, filename):
         '''
-        write the samples into the file
+        write the samples into the file.
+
+        Parameters
+        -----------
+
+        filename: str
+        
         '''
 
         with open(filename, "w") as output:
@@ -74,3 +101,5 @@ class MCMC(object):
                 for coef in sample[:-1]:
                     output.write(str(coef)+",")
                 output.write(str(sample[-1])+"\n")
+
+    

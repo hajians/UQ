@@ -10,6 +10,31 @@ class SemiLinSystem(object):
     def __init__(self, c_sound, t_final, x_l, x_r, dx, lambda_len, eps = 10**-2):
         '''
         Initialize a SemiLinearSystem associated to a pipe.
+
+        Parameters
+        ----------
+
+        c_sound: float
+        sound speed
+
+        t_final: float
+        final time
+
+        x_l: float
+        left boundary of the domain
+        
+        x_r: float
+        right boundary of the domain
+
+        dx: float
+        mesh size
+
+        lambda_len: int
+        expansion number for the friction coefficients
+
+        eps: float
+        a number for computing pressure drop at both ends of the pipe
+        
         '''
         self.obj = lib.CSemiLinSystem(c_double(c_sound),
                                       c_double(t_final),
@@ -37,6 +62,13 @@ class SemiLinSystem(object):
     def run(self, coef, write_bool=False):
         '''
         Compute the solution till the given end time.
+
+        Parameters
+        ----------
+
+        write_bool: bool
+        if True, then the computed solution at each time step is saved in 'output' file.
+        
         '''
         if self.lambda_len==len(coef):
             lib.CRun(self.obj, (c_double * len(coef))(*coef), c_bool(write_bool) )
@@ -45,7 +77,17 @@ class SemiLinSystem(object):
 
     def get_presure_drop(self, time_instance=10, inplace=False):
         '''
-        compute pressure drop at certain times.
+        computes pressure drop at certain times.
+
+        Parameters
+        ----------
+        
+        time_instance: int
+        pressure drop will be computed at #time_instance uniformly in 
+        the interval [0, t_final]
+
+        inplace: bool
+        if True, it returns a vector containing pressure drops
         '''
 
         length = self._CurrentTimeIndex()
@@ -62,7 +104,7 @@ class SemiLinSystem(object):
         
     def get_boundary_p(self):
         '''
-        Returns the boundary values of P.
+        Returns the boundary values of P into self.boundary_p
         '''
         length = self._CurrentTimeIndex() + 1
 
@@ -79,7 +121,20 @@ class SemiLinSystem(object):
 
     def get_lambda_average(self, vec_coef):
         '''
-        Get the lambda average array
+        Gets the lambda average array evaluated on the mesh for the 
+        given friction function.
+
+        Parameters
+        ----------
+
+        vec_coef: the vector representing the friction coefficient
+
+        Returns
+        -------
+
+        self.lambda_avg: numpy.array(double)
+        nodal values of the friction function evaluated on the mesh
+        
         '''
 
         self.lambda_avg = np.empty(self.NumberofCells, dtype=c_double)
@@ -105,7 +160,7 @@ class SemiLinSystem(object):
         
     def _TimeSlices(self):
         '''
-        Get the time slices.
+        Get the time slices, i.e., a vector of type [0, dt, 2*dt, ..., T]
         '''
         length = self._CurrentTimeIndex() + 1
         
@@ -125,7 +180,7 @@ class SemiLinSystem(object):
 
     def _CurrentTimeIndex(self):
         '''
-        Returns current time index
+        Returns the current time index.
         '''
         return lib.CCurrentTimeIndex(self.obj)
 
@@ -135,30 +190,30 @@ if __name__ == "__main__":
 
     import matplotlib.pyplot as plt
 
+    # build a pipe
     pipe = SemiLinSystem(1.0, 5.0, 0.0, 1.0, 0.005, 7, 0.05)
+    # get the info of the pipe
     pipe.info()
-    # pipe.run([0.05, 0.01, 0.001], write_bool=True)
-    coef = [0.05, 0.01, 0.0, 0.04, 0.0, 0.0, 0.0]
-    pipe.get_lambda_average(coef)
-    
-    # plt.plot(range(pipe.NumberofCells), pipe.lambda_avg, "-o")
-    # plt.show(block=False)
-    
+
+    # check how pressure drop behaves when the friction coefficient is
+    # updated. Theoretically we have continuous dependence which can
+    # be seen also numerically.
     coef = 0.0
-    for i in range(0,300):
-        vec_c = [0.05, 0.01, 0.0, 0.04, 0.0, coef, 0.0]
+    for i in range(0,100):
+        vec_c = [0.05 + coef, 0.01, 0.0, 0.04, 0.0, 0.005, 0.005]
         pipe.run(vec_c)
         pipe.get_lambda_average(vec_c)
-        pipe.get_presure_drop()
+        pipe.get_presure_drop(time_instance=13)
         if i%10==1:
             plt.plot(pipe.timeslices, pipe.pressure_drop, "-o",
-                     label="cf = "+ str(coef))
-            # plt.plot(range(pipe.NumberofCells), pipe.lambda_avg, "-")
+                     label="cf = "+ str(0.05 + coef))
         coef += 0.001
 
-    # print "computation done"
+    print ">> Computation Done"
 
-    plt.legend(bbox_to_anchor=(1.0, 1), loc=2, borderaxespad=0.0)
+    plt.legend(loc=2, borderaxespad=0.0)
+    plt.xticks([round(tn,2) for tn in pipe.timeslices])
+    plt.xlabel("$t_n$", fontsize=24)
+    plt.ylabel("$\delta p_h(t_n)$", fontsize=24)
+    plt.tight_layout()
     plt.show(block=True)
-
-#    pipe.run([coef], True)
