@@ -14,11 +14,6 @@ build/Initial_Data_For_Q.o: src/Initial_Data_For_Q.cpp
 
 build/SourceTerm.o: src/SourceTerm.cpp
 
-build/foo.o: src/foo.cpp 
-
-build/test.o: src/test.cpp
-
-lib/foo.so: build/foo.o build/test.o
 
 build/CWrapper.o: src/CWrapper.cpp
 lib/CWrapper.so: build/CWrapper.o \

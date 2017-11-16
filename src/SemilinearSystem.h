@@ -3,7 +3,10 @@
 *
 *	@class 	SemilienarSystem
 *
-*	@brief	The class allows for simualting transport of natural gas through a single pipe utilizing a semilienar system and for a user-provided friction coefficient and friction function.
+*	@brief The class allows for simualting transport of natural
+*	gas through a single pipe utilizing a semilienar system and
+*	for a user-provided friction coefficient and friction
+*	function.
 *
 *	The class 'SemilinearSystem' simulates the transport of natural gas through a single pipe utilizing a semilinear model that is given as <br>
 *	<center>
@@ -51,7 +54,7 @@
 //	Including the functions specifying the functions utilized in the expansion of the friction coefficient
 #include "Value_Lambda_Base.h"
 
-//	Including the function specifying the frictino function
+//	Including the function specifying the friction function
 
 #include "SourceTerm.h"
 
@@ -65,9 +68,7 @@ class SemilinearSystem
 {
  public:
   //	Declaration of functions
-  SemilinearSystem(double D_SpeedOfSound, double D_TerminalTime,
-		   double D_Boundary_Position_Left, double D_Boundary_Position_Right,
-		   double D_Delta_x, int I_Lambda_Expansion_Length, double eps); // Constructor
+  SemilinearSystem(double, double, double, double, double, int, double); // Constructor
 		
   // giving info about pipe in the terminal
   void info();
@@ -75,35 +76,35 @@ class SemilinearSystem
   //	PUBLIC FUNCTIONS
   //	RETURN-TYPE void
 
-  void EvalTest(  ); //	Testing function that is for development only and will be erased later
+  void EvalTest(); //	Testing function that is for development only and will be erased later
 
   /*
     Function that can be callled from main code that provides the
     coefficients of LAMBDA-Expansion and solves the main problem for
     these values
    */
-  void Run( double DA_P_Lambda_Coefficients[], bool write2file_bool = true ); 
+  void Run(double *, bool = true ); 
 
   /*
     Function that can be callled from main code that provides the
     coefficients of LAMBDA-Expansion and solves the main problem for these
     values
    */
-  void Run_Text_Output( double DA_P_Lambda_Coefficients[] ); 
+  void Run_Text_Output(double *); 
   
-  void Write2File(char* filename, bool append = true);
+  void Write2File(char* , bool = true);
   
   // 	RETURN-TYPE double
   //	Observation Operator
-  double get_P_Left_Boundary( double D_EvaluationTime_Arg); //	Returns value of P on the left boundary for given time
-  double get_P_Right_Boundary( double D_EvaluationTime_Arg); //	Returns value of P on the right boundary for given time
-  double get_P_Difference( double D_EvaluationTime_Arg); //	Returns difference of P between boundaries.
+  double get_P_Left_Boundary(double); //	Returns value of P on the left boundary for given time
+  double get_P_Right_Boundary(double); //	Returns value of P on the right boundary for given time
+  double get_P_Difference(double); //	Returns difference of P between boundaries.
 
   int CurrentTimeIndex();
   double* BoundaryValueP_Left();
   double* BoundaryValueP_Right();
   double* TimeSlices();
-  double* LambdaAverage(double DA_P_Lambda_Coefficients_GIVEN[]);
+  double* LambdaAverage(double *);
   double* SendLambdaAverage();
   int NumberofCells();
  private:
@@ -223,13 +224,13 @@ class SemilinearSystem
   
   //	Declaration of FUNCTIONS
 		//	RETURN-VALUE void
-  void Set_IC_Q( double* DA_P_Values_Q, int I_NumberOfCells, double D_Boundary_Position_Left, double D_Delta_x );	//	Stores the integral averages of the initial data for q on the array 'DA_P_Values_Q'
-  void Set_IC_P( double* DA_P_Values_P, int I_NumberOfCells, double D_Boundary_Position_Left, double D_Delta_x );	//	Stores the integral averages of the initial data for p on the array 'DA_P_Values_P'
-  void Set_Lambda_Averages( double*, double*, int, int, double, double  );
+  void Set_IC_Q(double*, int, double, double);	//	Stores the integral averages of the initial data for q on the array 'DA_P_Values_Q'
+  void Set_IC_P(double*, int, double, double);	//	Stores the integral averages of the initial data for p on the array 'DA_P_Values_P'
+  void Set_Lambda_Averages(double*, double*, int, int, double, double);
   
   //	RETURN-VALUE double		
-  double 	Read_BoundaryValues_Q_Left(double D_EvaluationTime);		//	HANDSHAKE: evaluation of the boundary value of q at the 'left' boundary at time t
-  double	Read_BoundaryValues_Q_Right(double D_EvaluationTime);		// 	HANDSHAKE: evaluation of the boundary value of q at the 'right' boundary at time t
+  double 	Read_BoundaryValues_Q_Left(double);		//	HANDSHAKE: evaluation of the boundary value of q at the 'left' boundary at time t
+  double	Read_BoundaryValues_Q_Right(double);		// 	HANDSHAKE: evaluation of the boundary value of q at the 'right' boundary at time t
 
 };
 
