@@ -4,14 +4,15 @@
 plot2.py animates the sequence of samples in the Markov chain.
 '''
 
+import sys
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 from matplotlib import animation
 import matplotlib as mpl
-from python.uq import *
+from examples.uq import *
 
-filename = "samples-N3-fric0.075-wNoise.dat"
+filename = "results/samples-N3-fric0.075-wNoise.dat"
 df = pd.read_csv(filename, header=None)
 
 pipe_true.info()
@@ -67,10 +68,11 @@ if __name__=="__main__":
                                    blit=True)
 
     try:
-        anim.save('UQsamples.gif', dpi=80, writer='imagemagick')
+        if '-save'==sys.argv[1]:
+            anim.save('UQsamples.gif', dpi=80, writer='imagemagick')
     except:
-        print "could not same the GIF file"
-    
+        print "did not save the GIF file"
+        
     plt.show(block=False)
 
 

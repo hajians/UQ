@@ -44,8 +44,8 @@ of a pipe used during MCMC for sampling
 
 '''
 
-from python.mcmc import MCMC
-from python.SemilinearSystem import SemiLinSystem
+from UQuant.mcmc import MCMC
+from UQuant.SemilinearSystem import SemiLinSystem
 from numpy.random import normal
 from numpy import pi, exp, dot
 from numpy import empty
