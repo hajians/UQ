@@ -1,26 +1,26 @@
 MAIN.o: MAIN.cpp
 
-build/SemilinearSystem.o: src/SemilinearSystem.cpp
+build_cpp/SemilinearSystem.o: src/SemilinearSystem.cpp
 
-build/Boundary_Data_For_Q_L.o: src/Boundary_Data_For_Q_L.cpp
+build_cpp/Boundary_Data_For_Q_L.o: src/Boundary_Data_For_Q_L.cpp
 
-build/Boundary_Data_For_Q_R.o: src/Boundary_Data_For_Q_R.cpp
+build_cpp/Boundary_Data_For_Q_R.o: src/Boundary_Data_For_Q_R.cpp
 
-build/Initial_Data_For_P.o: src/Initial_Data_For_P.cpp
+build_cpp/Initial_Data_For_P.o: src/Initial_Data_For_P.cpp
 
-build/Value_Lambda_Base.o: src/Value_Lambda_Base.cpp
+build_cpp/Value_Lambda_Base.o: src/Value_Lambda_Base.cpp
 
-build/Initial_Data_For_Q.o: src/Initial_Data_For_Q.cpp
+build_cpp/Initial_Data_For_Q.o: src/Initial_Data_For_Q.cpp
 
-build/SourceTerm.o: src/SourceTerm.cpp
+build_cpp/SourceTerm.o: src/SourceTerm.cpp
 
 
-build/CWrapper.o: src/CWrapper.cpp
-lib/CWrapper.so: build/CWrapper.o \
-		 build/SemilinearSystem.o \
-		 build/Boundary_Data_For_Q_L.o \
-		 build/Boundary_Data_For_Q_R.o \
-		 build/Initial_Data_For_P.o \
-		 build/Value_Lambda_Base.o \
-		 build/Initial_Data_For_Q.o \
-		 build/SourceTerm.o			
+build_cpp/CWrapper.o: src/CWrapper.cpp
+lib/CWrapper.so: build_cpp/CWrapper.o \
+		 build_cpp/SemilinearSystem.o \
+		 build_cpp/Boundary_Data_For_Q_L.o \
+		 build_cpp/Boundary_Data_For_Q_R.o \
+		 build_cpp/Initial_Data_For_P.o \
+		 build_cpp/Value_Lambda_Base.o \
+		 build_cpp/Initial_Data_For_Q.o \
+		 build_cpp/SourceTerm.o			

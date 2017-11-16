@@ -16,9 +16,11 @@ LDFLAGS := -shared
 LIB :=
 
 SRCDIR := src
-BUILDDIR := build
+BUILDDIR := build_cpp
 LIBDIR := lib
 TARGET := bin
+
+PYTHON_LIB := UQuant/lib
 
 SRCEXT = cpp
 
@@ -36,6 +38,7 @@ $(BUILDDIR)/%.o: $(SRCDIR)/%.cpp
 
 $(LIBDIR)/%.so: $(BUILDDIR)/%.o
 	$(CC) $(LDFLAGS) -Wl,-soname,$@ -o $@ $^
+	cp $@ $(PYTHON_LIB)/.
 
 
 # $(DEP): $(SRCDIR)/fort_depend.py
@@ -44,6 +47,6 @@ $(LIBDIR)/%.so: $(BUILDDIR)/%.o
 
 clean:
 	@echo "Cleaning..."
-	rm -f $(BUILDDIR)/*.o $(LIBDIR)/*.so $(TARGET)/* 
+	rm -f $(BUILDDIR)/*.o $(LIBDIR)/*.so $(TARGET)/* $(PYTHON_LIB)/*.so
 
 

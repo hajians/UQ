@@ -2,8 +2,10 @@
 
 from ctypes import cdll, c_double, c_bool, c_char, c_int, POINTER
 import numpy as np
+import os
 
-lib = cdll.LoadLibrary('lib/CWrapper.so')
+_DIR = os.path.dirname(os.path.abspath(__file__))
+lib = cdll.LoadLibrary(_DIR+'/lib/CWrapper.so')
 
 class SemiLinSystem(object):
 
