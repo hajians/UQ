@@ -11,7 +11,8 @@ CCFLAGS := -fbounds-check -fstack-check \
 	   -pg -fPIC 
 
 # -Wl : pass option as an option to the linker
-LDFLAGS := -shared 
+LDFLAGS := -shared
+LDMAC := -dynamiclib
 
 LIB :=
 
@@ -39,6 +40,11 @@ $(BUILDDIR)/%.o: $(SRCDIR)/%.cpp
 $(LIBDIR)/%.so: $(BUILDDIR)/%.o
 	$(CC) $(LDFLAGS) -Wl,-soname,$@ -o $@ $^
 	cp $@ $(PYTHON_LIB)/.
+
+$(LIBDIR)/%.dylib: $(BUILDDIR)/%.o
+	$(CC) $(LDMAC) -Wl,-install_name,$@ -o $@ $^
+	cp $@ $(PYTHON_LIB)/.
+	mv $(PYTHON_LIB)/*.dylib $(PYTHON_LIB)/*.so
 
 
 # $(DEP): $(SRCDIR)/fort_depend.py

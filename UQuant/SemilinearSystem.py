@@ -1,6 +1,6 @@
 #! /usr/bin/env python2.7
 
-from ctypes import cdll, c_double, c_bool, c_char, c_int, POINTER
+from ctypes import cdll, c_double, c_bool, c_char, c_int, c_void_p, POINTER
 import numpy as np
 import os
 
@@ -38,12 +38,16 @@ class SemiLinSystem(object):
         a number for computing pressure drop at both ends of the pipe
         
         '''
+
+        lib.CSemiLinSystem.restype = c_void_p
         self.obj = lib.CSemiLinSystem(c_double(c_sound),
                                       c_double(t_final),
                                       c_double(x_l), c_double(x_r),
                                       c_double(dx), c_int(lambda_len),
                                       c_double(eps) )
 
+        print "Address of the pipe in the memory: ", hex(self.obj)
+        
         lib.CNumberofCells.restype = c_int
         self.NumberofCells = lib.CNumberofCells(self.obj)
         

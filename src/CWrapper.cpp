@@ -11,7 +11,9 @@ extern "C" {
 				   double dx, int lambda_len,
 				   double eps)
   {
-    return new SemilinearSystem(c_sound, t_final, x_l, x_r, dx, lambda_len, eps);
+    SemilinearSystem* s = new SemilinearSystem(c_sound, t_final, x_l, x_r, dx, lambda_len, eps);
+    cout << "Address of the pipe in the memory from cpp: "<< s << endl;
+    return s;
   }
 
   /**

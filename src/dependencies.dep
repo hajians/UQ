@@ -16,6 +16,7 @@ build_cpp/SourceTerm.o: src/SourceTerm.cpp
 
 
 build_cpp/CWrapper.o: src/CWrapper.cpp
+
 lib/CWrapper.so: build_cpp/CWrapper.o \
 		 build_cpp/SemilinearSystem.o \
 		 build_cpp/Boundary_Data_For_Q_L.o \
@@ -24,3 +25,12 @@ lib/CWrapper.so: build_cpp/CWrapper.o \
 		 build_cpp/Value_Lambda_Base.o \
 		 build_cpp/Initial_Data_For_Q.o \
 		 build_cpp/SourceTerm.o			
+
+lib/CWrapper.dylib : build_cpp/CWrapper.o \
+		     build_cpp/SemilinearSystem.o \
+		     build_cpp/Boundary_Data_For_Q_L.o \
+		     build_cpp/Boundary_Data_For_Q_R.o \
+		     build_cpp/Initial_Data_For_P.o \
+		     build_cpp/Value_Lambda_Base.o \
+		     build_cpp/Initial_Data_For_Q.o \
+		     build_cpp/SourceTerm.o			
