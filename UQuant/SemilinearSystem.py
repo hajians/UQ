@@ -1,6 +1,6 @@
 #! /usr/bin/env python2.7
 
-from ctypes import cdll, c_double, c_bool, c_char, c_int, c_void_p, POINTER
+from ctypes import cdll, c_double, c_bool, c_char_p, c_int, c_void_p, POINTER
 import numpy as np
 import os
 
@@ -40,6 +40,10 @@ class SemiLinSystem(object):
         '''
 
         lib.CSemiLinSystem.restype = c_void_p
+        lib.CSemiLinSystem.argtypes = [c_double, c_double, 
+                                       c_double, c_double, 
+                                       c_double, c_int, c_double]
+        
         self.obj = lib.CSemiLinSystem(c_double(c_sound),
                                       c_double(t_final),
                                       c_double(x_l), c_double(x_r),
@@ -49,8 +53,9 @@ class SemiLinSystem(object):
         print "Address of the pipe in the memory: ", hex(self.obj)
         
         lib.CNumberofCells.restype = c_int
+        lib.CNumberofCells.argtypes = [c_void_p]
         self.NumberofCells = lib.CNumberofCells(self.obj)
-        
+
         self.lambda_len = lambda_len
         
         self.boundary_p = None
@@ -63,6 +68,7 @@ class SemiLinSystem(object):
         '''
         Get the info of the pipe.
         '''
+        lib.CInfo.argtypes = [c_void_p]
         lib.CInfo(self.obj)
 
     def run(self, coef, write_bool=False):
@@ -77,6 +83,7 @@ class SemiLinSystem(object):
         
         '''
         if self.lambda_len==len(coef):
+            lib.CRun.argtypes = [c_void_p, c_double * len(coef), c_bool]
             lib.CRun(self.obj, (c_double * len(coef))(*coef), c_bool(write_bool) )
         else:
             print "Error in run: coef does not have correct size"
@@ -116,7 +123,11 @@ class SemiLinSystem(object):
 
         self.boundary_p = np.empty([length,2], dtype=c_double)
         
+
+        lib.CBoundaryValueP_Left.argtypes = [c_void_p]
         lib.CBoundaryValueP_Left.restype = POINTER(c_double)
+
+        lib.CBoundaryValueP_Right.argtypes = [c_void_p]
         lib.CBoundaryValueP_Right.restype = POINTER(c_double)
 
         data_left = lib.CBoundaryValueP_Left(self.obj)
@@ -145,6 +156,7 @@ class SemiLinSystem(object):
 
         self.lambda_avg = np.empty(self.NumberofCells, dtype=c_double)
 
+        lib.CLambda_Average.argtypes = [c_void_p, c_double * len(vec_coef)]
         lib.CLambda_Average.restype = POINTER(c_double)
 
         for i in range(self.NumberofCells):
@@ -157,6 +169,7 @@ class SemiLinSystem(object):
 
         self.lambda_avg = np.empty(self.NumberofCells, dtype=c_double)
 
+        lib.CGetLambda_Average.argtypes = [c_void_p]
         lib.CGetLambda_Average.restype = POINTER(c_double)
 
         for i in range(self.NumberofCells):
@@ -169,8 +182,9 @@ class SemiLinSystem(object):
         Get the time slices, i.e., a vector of type [0, dt, 2*dt, ..., T]
         '''
         length = self._CurrentTimeIndex() + 1
-        
+
         lib.CTimeSlices.restype = POINTER(c_double)
+        lib.CTimeSlices.argtypes = [c_void_p]
 
         out = np.empty([length,1], dtype=c_double)
         for i in range(0,length):
@@ -182,12 +196,14 @@ class SemiLinSystem(object):
         '''
         Write the solution at the current time to a file.
         '''
+        lib.CWrite2File.argtypes = [c_void_p, c_char_p, c_bool]
         lib.CWrite2File(self.obj, filename, c_bool(append))
 
     def _CurrentTimeIndex(self):
         '''
         Returns the current time index.
         '''
+        lib.CCurrentTimeIndex.argtypes = [c_void_p]
         return lib.CCurrentTimeIndex(self.obj)
 
     

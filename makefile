@@ -43,14 +43,15 @@ $(LIBDIR)/%.so: $(BUILDDIR)/%.o
 
 $(LIBDIR)/%.dylib: $(BUILDDIR)/%.o
 	$(CC) $(LDMAC) -Wl,-install_name,$@ -o $@ $^
-	cp $@ $(PYTHON_LIB)/.
-	mv $(PYTHON_LIB)/*.dylib $(PYTHON_LIB)/*.so
+	cp $@ $(basename $@).so
+	mv $(LIBDIR)/*.so $(PYTHON_LIB)/.
 
 
 # $(DEP): $(SRCDIR)/fort_depend.py
 # 	@echo "Making dependencies..."
 # 	python $(SRCDIR)/fort_depend.py -b $(BUILDDIR) -w -o $(DEP) -f $(SRCDIR)/*.$(SRCEXT)
-
+ec:
+	@echo $(basename $(LIBDIR)/CWrapper.dylib).so
 clean:
 	@echo "Cleaning..."
 	rm -f $(BUILDDIR)/*.o $(LIBDIR)/*.so $(TARGET)/* $(PYTHON_LIB)/*.so
