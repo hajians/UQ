@@ -25,7 +25,7 @@ If everything goes well you should be able to test the package:
 	python examples/test.py
 ```	
 The output in the console looks like
-```bash
+```
 ========================================== info ==
 Omega _____________________________(0,1)
 Length of the domain ______________1
