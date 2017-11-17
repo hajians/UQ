@@ -50,7 +50,7 @@ class SemiLinSystem(object):
                                       c_double(dx), c_int(lambda_len),
                                       c_double(eps) )
 
-        print "Address of the pipe in the memory: ", hex(self.obj)
+        print "Address of the pipe in the memory from python: ", hex(self.obj)
         
         lib.CNumberofCells.restype = c_int
         lib.CNumberofCells.argtypes = [c_void_p]

@@ -5,20 +5,52 @@ plot2.py animates the sequence of samples in the Markov chain.
 '''
 
 import sys
-import numpy as np
+
+from numpy.random import normal
+from numpy import pi, exp, dot
+from numpy import empty
+
 import pandas as pd
 import matplotlib.pyplot as plt
-from matplotlib import animation
 import matplotlib as mpl
-from examples.uq import *
+
+from matplotlib import animation
+
+from UQuant.SemilinearSystem import SemiLinSystem
+
+# stochastic settings
+uni_prior_down = [0.0, 0.0,0.0, 0.0, 0.0, 0.0, 0.0]
+uni_prior_up   = [0.5, 0.05,0.05, 0.05, 0.05, 0.05, 0.05]
+
+sigma_normal   = 0.05
+initial_point_mcmc = [0.45, 0.04, 0.04, 0.04, 0.04, 0.04, 0.04]
+expan_coef = 7
+
+# physical settings
+c_sound = 1.0
+t_final = 5.0
+x_l, x_r = [0.0, 1.0]
+dx = 0.005
+boundary_eps = 0.05
+
+# true friction coefficient
+true_friction = [0.075, 0.015, 0.035, 0.025, 0.035, 0.001, 0.03]
+time_ins = 20
+
+# construct and run the true pipe
+pipe_true = SemiLinSystem(c_sound, t_final, x_l, x_r, dx, expan_coef, boundary_eps)
+pipe_true.run(true_friction)
+y_obs = normal(0.0, 0.1, time_ins) + \
+        pipe_true.get_presure_drop(time_instance=time_ins, inplace=False)
+
+# construct a pipe for computation
+pipe = SemiLinSystem(c_sound, t_final, x_l, x_r, dx, expan_coef, boundary_eps)
 
 filename = "results/samples-N3-fric0.075-wNoise.dat"
 df = pd.read_csv(filename, header=None)
+density_samples = df.values
 
 pipe_true.info()
-
-mcmc = MCMC(density, proposal_density, draw_from_proposal, initial_point_mcmc)
-mcmc.density_samples = df.values
 
 fig = plt.figure()
 ax = plt.axes(xlim=(min(pipe_true.mesh), max(pipe_true.mesh)),
@@ -30,7 +62,7 @@ plt.ylabel("$\lambda(x)$", fontsize=24)
 plt.tight_layout()
 text_label = ax.text(1,1, '', transform=ax.transAxes)
 
-lines = [ax.plot([], [], "-", lw=1)[0] for _ in range(len(mcmc.density_samples)+1)]
+lines = [ax.plot([], [], "-", lw=1)[0] for _ in range(len(density_samples)+1)]
 
 def init():
     for line in lines:
@@ -39,7 +71,7 @@ def init():
 
 def update(i):
     if i>0:
-        pipe.get_lambda_average(mcmc.density_samples[i])
+        pipe.get_lambda_average(density_samples[i])
         for data in pipe.lambda_avg:
             if abs(data)>10**2:
                 print data
@@ -63,7 +95,7 @@ def update(i):
 
 if __name__=="__main__":
     anim = animation.FuncAnimation(fig, update, init_func=init,
-                                   frames=len(mcmc.density_samples),
+                                   frames=len(density_samples),
                                    repeat=False, repeat_delay=5000,
                                    blit=True)
 
