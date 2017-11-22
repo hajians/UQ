@@ -38,11 +38,11 @@ $(BUILDDIR)/%.o: $(SRCDIR)/%.cpp
 	$(CC) $(CCFLAGS) -c $< -o $@ $(LIB)
 
 $(LIBDIR)/%.so: $(BUILDDIR)/%.o
-	$(CC) $(LDFLAGS) -Wl,-soname,$@ -o $@ $^
+	$(CC) $(CCFLAGS) $(LDFLAGS) -Wl,-soname,$@ -o $@ $^
 	cp $@ $(PYTHON_LIB)/.
 
 $(LIBDIR)/%.dylib: $(BUILDDIR)/%.o
-	$(CC) $(LDMAC) -Wl,-install_name,$@ -o $@ $^
+	$(CC) $(CCFLAGS) $(LDMAC) -Wl,-install_name,$@ -o $@ $^
 	cp $@ $(basename $@).so
 	mv $(LIBDIR)/*.so $(PYTHON_LIB)/.
 
