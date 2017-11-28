@@ -5,7 +5,7 @@ Bayesian inverse problems that occur in the Gas industry, e.g., to
 identify friction coefficients in gas pipes.
 
 ## Downloading the package
-**requirement**: make, g++, python2.7
+**requirement**: `make`, `g++`, `python2.7`
 
 download the package either through git,
 ```sh
@@ -35,6 +35,7 @@ UQ
 In order to compile and install the package execute the following commands:
 ```sh
 make lib/CWrapper.dylib   
+pip install -r requirements.txt
 python setup.py install
 ```
 The first command generates a shared library and save a file called
@@ -68,6 +69,7 @@ y_obs = pipe_true.get_presure_drop(time_instance=time_ins, inplace=False)
 In order to compile and install the package execute the following commands:
 ```sh
 make lib/CWrapper.so
+pip install -r requirements.txt
 python setup.py install
 ```
 The first command generates a shared library and save a file called
@@ -134,7 +136,7 @@ with respect to the friction coefficient.
 In the second test we will run the Markov-Chain Monte-Carlo (MCMC)
 algorithm for the case where the friction coefficient is a scalar number:
 ```sh
-	python examples/test0.py
+python examples/test0.py
 ```
 The output is saved in `results/friction_scalar.png`:
 ![Histogram of the friction coefficient](results/friction_scalar.png)
@@ -149,10 +151,10 @@ We can also perform an experiment when the friction coefficient is a
 function. The script is called `uq.py` and is located in `examples`
 folder. In order to test, execute
 ```sh
-	python examples/uq.py
+python examples/uq.py
 ```
 In the following figure we can see the true friction coefficient as a
-function spatial coordinates and the sequence of samples obtained from
+function of spatial coordinates and the sequence of samples obtained from
 MCMC.
 
 ![Samples from MCMC](results/UQsamples.gif)
