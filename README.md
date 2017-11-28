@@ -9,11 +9,13 @@ identify friction coefficients in gas pipes.
 
 download the package either through git,
 ```sh
-	git clone URL
+git clone https://github.com/hajianOne/UQ.git
 ```
-or download it directly from URL and decompress it. Go into the
-package directory. You should see the following folder structure
-```sh
+or download it directly from
+[GitHub](https://github.com/hajianOne/UQ.git)
+and decompress it. Go into the package directory. 
+You should see the following folder structure
+```
 UQ
 |-- makefile
 |-- README.md
@@ -32,8 +34,8 @@ UQ
 
 In order to compile and install the package execute the following commands:
 ```sh
-	make lib/CWrapper.dylib   
-	python setup.py install
+make lib/CWrapper.dylib   
+python setup.py install
 ```
 The first command generates a shared library and save a file called
 `CWrapper.dylib` in `lib/` directory and `CWrapper.so` in
@@ -65,8 +67,8 @@ y_obs = pipe_true.get_presure_drop(time_instance=time_ins, inplace=False)
 
 In order to compile and install the package execute the following commands:
 ```sh
-	make lib/CWrapper.so
-	python setup.py install
+make lib/CWrapper.so
+python setup.py install
 ```
 The first command generates a shared library and save a file called
 `CWrapper.so` in `lib/` directory and `CWrapper.so` in
@@ -102,7 +104,7 @@ go to the root directory of the package, e.g., `UQ` and then execute
 the following command
 
 ```bash
-	python examples/test.py
+python examples/test.py
 ```	
 The output in the console looks like
 ```
