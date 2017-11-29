@@ -1,4 +1,4 @@
-# Uncertainty Quantification software for gas pipes
+# Uncertainty Quantification software for gas pipes 
 
 This is a software package written in C++ and Python for solving
 Bayesian inverse problems that occur in the Gas industry, e.g., to
