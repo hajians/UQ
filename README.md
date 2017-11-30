@@ -32,15 +32,18 @@ For more information see [References](#references).
 
 # Download and installation 
 ## Downloading the package
+
 **requirements**: `make`, `g++`, `python2.7` and `pip`
 
 Download the package either through git,
 ```sh
-	git clone URL
+git clone https://github.com/hajianOne/UQ.git
 ```
-or download it directly from URL and decompress it. Go into the
-package directory. You should see the following folder structure:
-```sh
+or download it directly from
+[GitHub](https://github.com/hajianOne/UQ.git)
+and decompress it. Go into the package directory. 
+You should see the following folder structure
+```
 UQ
 |-- makefile
 |-- README.md
@@ -60,9 +63,9 @@ UQ
 In order to compile and install the package execute the following
 commands (make sure you have the right permissions):
 ```sh
-	make lib/CWrapper.dylib   
-	pip install -r requirements.txt
-	python setup.py install
+make lib/CWrapper.dylib   
+pip install -r requirements.txt
+python setup.py install
 ```
 The first command generates a shared library and save a file called
 `CWrapper.dylib` in `lib/` directory and `CWrapper.so` in
@@ -95,9 +98,9 @@ y_obs = pipe_true.get_presure_drop(time_instance=time_ins, inplace=False)
 In order to compile and install the package execute the following
 commands (make sure you have the right permissions):
 ```sh
-	make lib/CWrapper.so
-	pip install -r requirements.txt
-	python setup.py install
+make lib/CWrapper.so
+pip install -r requirements.txt
+python setup.py install
 ```
 The first command generates a shared library and save a file called
 `CWrapper.so` in `lib/` directory and `CWrapper.so` in
@@ -133,7 +136,7 @@ go to the root directory of the package, e.g., `UQ` and then execute
 the following command
 
 ```bash
-	python examples/test.py
+python examples/test.py
 ```	
 The output in the console looks like
 ```
@@ -163,7 +166,7 @@ with respect to the friction coefficient.
 In the second test we will run the Markov-Chain Monte-Carlo (MCMC)
 algorithm for the case where the friction coefficient is a scalar number:
 ```sh
-	python examples/test0.py
+python examples/test0.py
 ```
 The output is saved in `results/friction_scalar.png`:
 
@@ -179,10 +182,10 @@ We can also perform an experiment when the friction coefficient is a
 function. The script is called `uq.py` and is located in `examples`
 folder. In order to test, execute
 ```sh
-	python examples/uq.py
+python examples/uq.py
 ```
 In the following figure we can see the true friction coefficient as a
-function spatial coordinates and the sequence of samples obtained from
+function of spatial coordinates and the sequence of samples obtained from
 MCMC.
 
 ![Samples from MCMC](results/UQsamples.gif)
