@@ -1,3 +1,5 @@
+[![Build Status](https://travis-ci.org/hajianOne/UQ.svg?branch=master)](https://travis-ci.org/hajianOne/UQ)
+
 * [Introduction](#introduction)
 * [Download and installation](#download-and-installation)
   - [Quick Installation on Mac OS](#quick-installation-on-mac-os)
