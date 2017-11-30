@@ -1,18 +1,45 @@
-# Uncertainty Quantification software for gas pipes
+* [Introduction](#introduction)
+* [Download and installation](#download-and-installation)
+  - [Quick Installation on Mac OS](#quick-installation-on-mac-os)
+  - [Quick Installation on Linux](#quick-installation-on-linux)
+  - [Testing](#testing)
+* [Disclaimer](#disclaimer)
+* [References](#references)
+
+# Introduction
 
 This is a software package written in C++ and Python for solving
 Bayesian inverse problems that occur in the Gas industry, e.g., to
-identify friction coefficients in gas pipes.
+identify friction coefficients in gas pipes. The flow of the gas in a
+pipe is modelled using a quasi-linear iso-thermal model, and the gas
+is subject to the friction. The behavior of the gas is described by
+its pressure and momentum along the pipe.
 
+Our task is to obtain statistical properties of the friction
+coefficient based on finite noisy observation of the pressure drop at
+both ends of the gas pipe, and a prior knowledge of the friction
+coefficient. As an example, we assume that the friction coefficient is
+uniformly distributed in the interval `[0.0,0.5]` while the true value
+is `0.075`, then the UQ package using Markov-Chain Monte Carlo (MCMC)
+method and a discretization of the gas model, obtain a posterior
+distribution for the friction coefficient. In the following Figure we
+observe that the posterior distribution is clustered around the true
+friction coefficient, i.e., `0.075`.
+
+![Histogram of the friction coefficient](results/friction_scalar-small.png)
+
+For more information see [References](#references).
+
+# Download and installation 
 ## Downloading the package
-**requirement**: make, g++, python2.7
+**requirements**: `make`, `g++`, `python2.7` and `pip`
 
-download the package either through git,
+Download the package either through git,
 ```sh
 	git clone URL
 ```
 or download it directly from URL and decompress it. Go into the
-package directory. You should see the following folder structure
+package directory. You should see the following folder structure:
 ```sh
 UQ
 |-- makefile
@@ -25,14 +52,16 @@ UQ
 |-- lib
 |-- results
 |-- src
-`-- UQuant
+\-- UQuant
 ```
 
 ## Quick Installation on Mac OS
 
-In order to compile and install the package execute the following commands:
+In order to compile and install the package execute the following
+commands (make sure you have the right permissions):
 ```sh
 	make lib/CWrapper.dylib   
+	pip install -r requirements.txt
 	python setup.py install
 ```
 The first command generates a shared library and save a file called
@@ -63,9 +92,11 @@ y_obs = pipe_true.get_presure_drop(time_instance=time_ins, inplace=False)
 
 ## Quick Installation on Linux
 
-In order to compile and install the package execute the following commands:
+In order to compile and install the package execute the following
+commands (make sure you have the right permissions):
 ```sh
 	make lib/CWrapper.so
+	pip install -r requirements.txt
 	python setup.py install
 ```
 The first command generates a shared library and save a file called
@@ -135,6 +166,7 @@ algorithm for the case where the friction coefficient is a scalar number:
 	python examples/test0.py
 ```
 The output is saved in `results/friction_scalar.png`:
+
 ![Histogram of the friction coefficient](results/friction_scalar.png)
 
 In this example, the true friction coefficient is `0.075` and we
@@ -172,3 +204,19 @@ MCMC.
 <!-- pipe = SemiLinSystem(c_sound, t_final, x_l, x_r, dx, expan_coef, boundary_eps) -->
 
 <!-- ``` -->
+
+# Disclaimer
+
+The UQ package is developed by S. Hajian, N. Strogies and
+M. Hintermüller. The UQ package is supported by the German Research
+Foundation DFG through the SFB-TRR 154. The aforementioned package
+(including code modifications) may only be used for NON-COMMERCIAL
+RESEARCH purposes. For inquiries concerning a different use, please
+contact the authors. See the [license](LICENSE.md).
+
+
+# References
+1. S. Hajian, M. Hintermüller, C. Schillings and N. Strogies, 
+   **A Bayesian approach for parameter identification in gas networks**,
+   in progress. 
+   
