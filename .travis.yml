@@ -4,7 +4,7 @@ matrix:
 	include:
 		- language: cpp
 		  compiler: gcc
-		  script: make lib
+		  script: make lib/CWrapper.so
 		- language: python
 		  python: python2.7
 		  install:
