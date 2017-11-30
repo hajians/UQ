@@ -42,7 +42,7 @@ git clone https://github.com/hajianOne/UQ.git
 or download it directly from
 [GitHub](https://github.com/hajianOne/UQ.git)
 and decompress it. Go into the package directory. 
-You should see the following folder structure
+You should see the following folder structure:
 ```
 UQ
 |-- makefile
