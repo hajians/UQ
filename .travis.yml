@@ -6,3 +6,5 @@ before_install:
 - sudo pip install -r requirements.txt
 script:
 - make lib/CWrapper.so
+- python2.7 setup.py install
+- python2.7 examples/test.py
