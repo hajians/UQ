@@ -47,6 +47,7 @@ You should see the following folder structure:
 UQ
 |-- makefile
 |-- README.md
+|-- LICENSE.md
 |-- requirements.txt
 |-- setup.py
 |-- build
@@ -69,8 +70,8 @@ python setup.py install
 ```
 The first command generates a shared library and save a file called
 `CWrapper.dylib` in `lib/` directory and `CWrapper.so` in
-`UQuant/lib/` directory. The second command installs python package in
-`UQuant` folder and the shared library.
+`UQuant/lib/` directory. The second and third commands installs
+python packages in `UQuant` folder and the shared library.
 
 If you didn't receive any error, you should be able to import the
 libraries in the python. For instance the following code should
@@ -104,8 +105,8 @@ python setup.py install
 ```
 The first command generates a shared library and save a file called
 `CWrapper.so` in `lib/` directory and `CWrapper.so` in
-`UQuant/lib/` directory. The second command installs python package in
-`UQuant` folder and the shared library.
+`UQuant/lib/` directory. The second and third commands installs python 
+packages in `UQuant` folder and the shared library.
 
 If you didn't receive any error, you should be able to import the
 libraries in the python. For instance the following code should
