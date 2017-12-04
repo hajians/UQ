@@ -176,27 +176,6 @@ def density(x):
 
 if __name__ == "__main__":
 
-    import matplotlib.pyplot as plt
-
-    ### Plotting
-    # get the info of the true pipe
-    pipe_true.info()
-    # plot the pressure drop of the true pressure drop
-    plt.plot(pipe_true.timeslices, pipe_true.pressure_drop,
-             marker="o", label="true pressure drop")
-    # plot the noisy pressure drop
-    plt.plot(pipe_true.timeslices, y_obs, linestyle="--", marker="x",
-             label="noisy pressure drop")
-    plt.xlabel("$t_n$", fontsize=24)
-    plt.ylabel("$\delta p_h^n$", fontsize=24)
-    plt.yticks(fontsize=20)
-    plt.xticks(fontsize=20)
-    plt.legend(loc=4, borderaxespad=0.0,
-               prop={'size': 20}, frameon=False)
-    plt.tight_layout()
-    plt.show(block=True)
-
-    
     ### instantiate an MCMC sampler
     mcmc = MCMC(density, proposal_density, draw_from_proposal, initial_point_mcmc)
 
@@ -205,19 +184,5 @@ if __name__ == "__main__":
     # write the samples into a file
     mcmc.write("samples.dat")
 
-    # samples_1d = []
-    # for sample in mcmc.density_samples:
-    #     samples_1d.append(sample[0])
-
-    # plt.xlabel("$\lambda$", fontsize=24)
-    # plt.ylabel("normalized frequency", fontsize=24)
-    # plt.hist(samples_1d, bins=100, normed=True)
-    # plt.xticks([0.0, 0.2, 0.3, 0.4, 0.5]+ true_friction,
-    #            fontsize=20)
-    # plt.yticks(fontsize=20)
-    # plt.gca().set_xlim([0.0,0.45])
-    # plt.tight_layout()
-    # plt.show(block=False)
-    # plt.savefig("results/friction_scalar.png")
 
     
