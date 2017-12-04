@@ -8,3 +8,4 @@ script:
 - make lib/CWrapper.so
 - sudo python2.7 setup.py install
 - python2.7 examples/test1.py
+- python2.7 examples/test0.py

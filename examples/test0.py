@@ -201,7 +201,7 @@ if __name__ == "__main__":
     mcmc = MCMC(density, proposal_density, draw_from_proposal, initial_point_mcmc)
 
     # run the MCMC sample
-    mcmc.run(max_iter = 10000, burning=1000)
+    mcmc.run(max_iter = 5000, burning=1000)
     # write the samples into a file
     #mcmc.write("samples-N3-fric0.075-wNoise.dat")
 
