@@ -11,15 +11,20 @@
 # Introduction
 
 This is a software package written in C++ and Python for solving
-Bayesian inverse problems that occur in the Gas industry, e.g., to
-identify friction coefficients in gas pipes. The flow of the gas in a
-pipe is modelled using a quasi-linear iso-thermal model, and the gas
-is subject to the friction. The behavior of the gas is described by
-its pressure and momentum along the pipe.
+Bayesian inverse problems that occur in the gas industry, e.g., to
+identify friction coefficients in gas pipes. The development of the
+software package is due to Soheil Hajian, Michael Hintermüller and
+Nikolai Strogies based on DFG funds under the SFB-TRR 154 (B02
+project) and funds from the Einstein Center for Mathematics Berlin
+through C-SE5 and D-OT1.
 
-Our task is to obtain statistical properties of the friction
+The flow of the gas in a pipe is modelled using a quasi-linear
+iso-thermal model, and the gas is subject to friction. The behavior of
+the gas is described by its pressure and momentum along the pipe.
+
+The task is to obtain statistical properties of the friction
 coefficient based on finite noisy observation of the pressure drop at
-both ends of the gas pipe, and a prior knowledge of the friction
+both ends of the gas pipe, and a prior knowledge on the friction
 coefficient. As an example, we assume that the friction coefficient is
 uniformly distributed in the interval `[0.0,0.5]` while the true value
 is `0.075`, then the UQ package using Markov-Chain Monte Carlo (MCMC)
@@ -214,11 +219,13 @@ MCMC.
 # Disclaimer
 
 The UQ package is developed by S. Hajian, N. Strogies and
-M. Hintermüller. The UQ package is supported by the German Research
-Foundation DFG through the SFB-TRR 154. The aforementioned package
-(including code modifications) may only be used for NON-COMMERCIAL
-RESEARCH purposes. For inquiries concerning a different use, please
-contact the authors. See the [license](LICENSE.md).
+M. Hintermüller. The UQ package is supported financially by the German
+Research Foundation DFG through the SFB-TRR 154 and funds from the
+Einstein Center for Mathematics Berlin through C-SE5 and D-OT1. The
+aforementioned package (including code modifications) may only be used
+for NON-COMMERCIAL RESEARCH purposes. For inquiries concerning a
+different use, please contact the authors. See the
+[license](LICENSE.md).
 
 
 # References
