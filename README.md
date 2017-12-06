@@ -12,15 +12,10 @@
 
 This is a software package written in C++ and Python for solving
 Bayesian inverse problems that occur in the gas industry, e.g., to
-identify friction coefficients in gas pipes. The development of the
-software package is due to Soheil Hajian, Michael Hintermüller and
-Nikolai Strogies based on DFG funds under the SFB-TRR 154 (B02
-project) and funds from the Einstein Center for Mathematics Berlin
-through C-SE5 and D-OT1.
-
-The flow of the gas in a pipe is modelled using a quasi-linear
-iso-thermal model, and the gas is subject to friction. The behavior of
-the gas is described by its pressure and momentum along the pipe.
+identify friction coefficients in gas pipes. The flow of the gas in a
+pipe is modelled using a quasi-linear iso-thermal model, and the gas
+is subject to friction. The behavior of the gas is described by its
+pressure and momentum along the pipe.
 
 The task is to obtain statistical properties of the friction
 coefficient based on finite noisy observation of the pressure drop at
