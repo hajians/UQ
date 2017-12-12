@@ -75,9 +75,10 @@ class MCMC(object):
                 print self.density(x_old), x_old
                 alpha = 0.0
                 
-            if ( (alpha > random.uniform(0.0,1.0)) & (it > burning) ):
+            if ( alpha > random.uniform(0.0,1.0) ):
                 x_old = x_prop
-                self.density_samples.append(x_prop)
+                if (it > burning):
+                    self.density_samples.append(x_prop)
 
             if it%100==1:
                 print "iter: ", it, ", # samples: ", len(self.density_samples)
