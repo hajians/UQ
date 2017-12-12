@@ -19,9 +19,9 @@ extern "C" {
   /**
    * Computes the solution of the semilinear system.
    */
-  void CRun(SemilinearSystem* pipe, double coef[], bool write2file_bool)
+  void CRun(SemilinearSystem* pipe, double coef[], bool write2file_bool, bool progress_bool)
   {
-    pipe->Run(coef, write2file_bool);
+    pipe->Run(coef, write2file_bool, progress_bool);
   }
 
   /**

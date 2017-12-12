@@ -12,7 +12,7 @@
 				     double x_l, double x_r,
 				     double dx, int lambda_len, double eps);
 
-    void CRun(SemilinearSystem* pipe, double coef[], bool write2file_bool);
+    void CRun(SemilinearSystem* pipe, double coef[], bool write2file_bool, bool progress_bool);
 
     void CWrite2File(SemilinearSystem* pipe, char* filename, bool append);
 

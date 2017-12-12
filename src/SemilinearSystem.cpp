@@ -359,7 +359,7 @@ void SemilinearSystem::Set_Lambda_Averages( double* DA_P_Lambda_AV, double* DA_P
 }
 
 
-void SemilinearSystem::Run( double DA_P_Lambda_Coefficients[], bool write2file_bool )
+void SemilinearSystem::Run(double DA_P_Lambda_Coefficients[], bool write2file_bool, bool progress_bool)
 {
   /**
    *	@brief function that solves the PDE-System for a
@@ -417,7 +417,13 @@ void SemilinearSystem::Run( double DA_P_Lambda_Coefficients[], bool write2file_b
   //	Loop over timesteps of the discretization
   for (int I_TimeStepCount = 1; I_TimeStepCount <= I_NumberOfTimeSteps; ++I_TimeStepCount)//1; ++I_TimeStepCount)//
     {
-      
+
+      if ( I_TimeStepCount % 50 == 0 && progress_bool){
+	cout << "computing the solution " << std::fixed 
+	     << std::setprecision(2) 
+	     << 100 * I_TimeStepCount / float(I_NumberOfTimeSteps) << "%" << " from cpp" << "\r";
+      }
+
       //	Updating P and Q on the interior cells of the
       //	discretization.  Loop over interior cells of the
       //	discretization (all except '0' and 'I_NumberOfCells +
@@ -446,8 +452,14 @@ void SemilinearSystem::Run( double DA_P_Lambda_Coefficients[], bool write2file_b
       DA_Values_Q_Intermediate[I_NumberOfCells + 1]	=	Value_Q_R( I_TimeStepCount*D_Delta_t );
 		
       //	Updating P on the ghost cells according to the flow of P and Q
-      DA_Values_P_Intermediate[0]						=	DA_P_Values_P[1] - DA_P_Values_Q[1]/D_SpeedOfSound + DA_Values_Q_Intermediate[0]/D_SpeedOfSound - (D_Delta_t/D_SpeedOfSound)*DA_P_Lambda_AV[1]*FrictionFunction( DA_P_Values_P[1], DA_P_Values_Q[1] );
-      DA_Values_P_Intermediate[I_NumberOfCells + 1]	=	DA_P_Values_P[I_NumberOfCells] + DA_P_Values_Q[I_NumberOfCells]/D_SpeedOfSound - DA_Values_Q_Intermediate[I_NumberOfCells + 1]/D_SpeedOfSound + (D_Delta_t/D_SpeedOfSound)*DA_P_Lambda_AV[I_NumberOfCells]*FrictionFunction( DA_P_Values_P[I_NumberOfCells], DA_P_Values_Q[I_NumberOfCells] );
+      DA_Values_P_Intermediate[0]	=	DA_P_Values_P[1] - DA_P_Values_Q[1]/D_SpeedOfSound 
+	+ DA_Values_Q_Intermediate[0]/D_SpeedOfSound 
+	- (D_Delta_t/D_SpeedOfSound)*DA_P_Lambda_AV[1]*FrictionFunction( DA_P_Values_P[1], DA_P_Values_Q[1] );
+
+      DA_Values_P_Intermediate[I_NumberOfCells + 1]	=	DA_P_Values_P[I_NumberOfCells] + DA_P_Values_Q[I_NumberOfCells]/D_SpeedOfSound 
+	- DA_Values_Q_Intermediate[I_NumberOfCells + 1]/D_SpeedOfSound 
+	+ (D_Delta_t/D_SpeedOfSound)*DA_P_Lambda_AV[I_NumberOfCells]
+	*FrictionFunction( DA_P_Values_P[I_NumberOfCells], DA_P_Values_Q[I_NumberOfCells] );
 	        
       
       
@@ -483,8 +495,13 @@ void SemilinearSystem::Run( double DA_P_Lambda_Coefficients[], bool write2file_b
       if (write2file_bool){
 	Write2File(filename, true);
       }
+     
     }
-  
+
+  if (progress_bool){
+    cout << endl;			// move the cursor to the next line
+  }
+
 }
 
 void SemilinearSystem::Write2File(char* filename, bool append)

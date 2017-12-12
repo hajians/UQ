@@ -83,7 +83,7 @@ class SemilinearSystem
     coefficients of LAMBDA-Expansion and solves the main problem for
     these values
    */
-  void Run(double *, bool = true ); 
+  void Run(double *, bool = true, bool = true); 
 
   /*
     Function that can be callled from main code that provides the

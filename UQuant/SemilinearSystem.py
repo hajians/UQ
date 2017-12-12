@@ -71,7 +71,7 @@ class SemiLinSystem(object):
         lib.CInfo.argtypes = [c_void_p]
         lib.CInfo(self.obj)
 
-    def run(self, coef, write_bool=False):
+    def run(self, coef, write_bool=False, progress_bool=True):
         '''
         Compute the solution till the given end time.
 
@@ -83,8 +83,8 @@ class SemiLinSystem(object):
         
         '''
         if self.lambda_len==len(coef):
-            lib.CRun.argtypes = [c_void_p, c_double * len(coef), c_bool]
-            lib.CRun(self.obj, (c_double * len(coef))(*coef), c_bool(write_bool) )
+            lib.CRun.argtypes = [c_void_p, c_double * len(coef), c_bool, c_bool]
+            lib.CRun(self.obj, (c_double * len(coef))(*coef), c_bool(write_bool), c_bool(progress_bool) )
         else:
             print "Error in run: coef does not have correct size"
 

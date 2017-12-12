@@ -145,7 +145,7 @@ def likelihood(x):
     for i in x:
         if i<0: return 0.0
      
-    pipe.run(x)
+    pipe.run(x, progress_bool=False)
     
     # check if we have negative friction
     pipe.get_current_lambda_average()
