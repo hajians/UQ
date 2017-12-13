@@ -67,7 +67,7 @@ expan_coef = 1
 c_sound = 1.0
 t_final = 5.0
 x_l, x_r = [0.0, 1.0]
-dx = 5*10.0**-4
+dx = 0.005
 boundary_eps = 0.05
 
 # true friction coefficient
@@ -117,16 +117,16 @@ def EvalY_obs(timeslices):
     for idx, time in enumerate(timeslices):
         inList = iscloselist(time,y_obs_times)
         if inList!=None:
-            out[idx] = y_obs_times[inList]
+            out[idx] = y_obs[inList]
         else:
             right = bisect(y_obs_times, time)
             left  = right - 1
             if left < 0:
-                out[idx] = y_obs_times[right]
+                out[idx] = y_obs[right]
             elif right >= len(y_obs_times):
-                out[idx] = y_obs_times[left]
+                out[idx] = y_obs[left]
             else:
-                out[idx] = 0.5*(y_obs_times[right]+y_obs_times[left])
+                out[idx] = 0.5*(y_obs[right]+y_obs[left])
     return out
 
 
@@ -239,30 +239,41 @@ if __name__=="__main__":
     #          label="true")
 
     ### instantiate an MCMC sampler
-    dx = 0.0025
-    samples = []
+    dx = 0.005
 
+    samples = {}
+
+    # pipe = SemiLinSystem(c_sound, t_final, x_l, x_r, dx, expan_coef, boundary_eps)
+    # pipe.run([0.075])
+    # pipe.get_presure_drop(inplace=True)
+    # plt.plot(pipe.timeslices, pipe.pressure_drop, "-x")
+    # #plt.plot(pipe_true.timeslices, pipe_true.pressure_drop, "-o")
+    # #plt.plot(y_obs_times, y_obs, "-o")
+    # plt.plot(pipe.timeslices, EvalY_obs(pipe.timeslices), "-*")
+    # plt.show(block=False)
+    
+    
     for i in range(0,51):
-
         if i%10==1:
             pipe = SemiLinSystem(c_sound, t_final, x_l, x_r, dx, expan_coef, boundary_eps)
+            pipe.info()
             mcmc = MCMC(density, proposal_density, draw_from_proposal, initial_point_mcmc)
-            mcmc.run(1000,burning=100)
-            samples.append(mcmc.density_samples)
-        dx += 0.0005
+            mcmc.run(2000,burning=500)
+            samples[dx] = mcmc.density_samples
+        dx += 0.0001
 
         gc.collect()            # collect un-used objects
 
     # plt.legend(loc=2, borderaxespad=0.0)
     # plt.show(block=False)
 
-    Samples = []
-    for idx, sp in enumerate(samples):
-        Samples.append([])
-        for point in sp:
+    Samples = {}
+    for idx in samples:
+        Samples[idx] = []
+        for point in samples[idx]:
             Samples[idx].append(point[0])
 
-    for idx, sp in enumerate(reversed(Samples)):
-        plt.hist(sp, bins=40, normed=True, label=str(idx))
+    for idx in Samples:
+        plt.hist(Samples[idx], bins=40, normed=True, label=str(idx))
 
     plt.legend(loc=2)

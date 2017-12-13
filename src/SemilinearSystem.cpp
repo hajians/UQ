@@ -256,13 +256,15 @@ void SemilinearSystem::Set_IC_P( double* DA_P_Values_P, int I_NumberOfCells, dou
   
   //	Fixing the values at the boundaries (Have to be given and to
   //	be consistent with the spatial averages)
-	DA_P_Values_P[0]			=	( Value_P_0( D_Boundary_Position_Left - D_Delta_x ) + Value_P_0( D_Boundary_Position_Left ) )/2.0;
-	DA_P_Values_P[I_NumberOfCells + 1]	=	( Value_P_0( D_Boundary_Position_Left + (I_NumberOfCells)*D_Delta_x ) + Value_P_0( D_Boundary_Position_Left + (I_NumberOfCells + 1)*D_Delta_x ) )/2.0;
-	
-	for (int i = 1; i <= I_NumberOfCells; ++i)
-	{
-		DA_P_Values_P[i]	=	( Value_P_0( D_Boundary_Position_Left + ( i-1 )*D_Delta_x ) + Value_P_0( D_Boundary_Position_Left + ( i )*D_Delta_x ) )/2.0;
-	}
+  DA_P_Values_P[0]			= ( Value_P_0( D_Boundary_Position_Left - D_Delta_x ) + Value_P_0( D_Boundary_Position_Left ) )/2.0;
+  DA_P_Values_P[I_NumberOfCells + 1]	= ( Value_P_0( D_Boundary_Position_Left + (I_NumberOfCells)*D_Delta_x ) 
+					    + Value_P_0( D_Boundary_Position_Left + (I_NumberOfCells + 1)*D_Delta_x ) )/2.0;
+
+  for (int i = 1; i <= I_NumberOfCells; ++i)
+    {
+      DA_P_Values_P[i] = ( Value_P_0( D_Boundary_Position_Left + ( i-1 )*D_Delta_x ) 
+			   + Value_P_0( D_Boundary_Position_Left + ( i )*D_Delta_x ) )/2.0;
+    }
 }
 
 //	Definition of the function that provides the integral average of the friction coefficient for the cells
@@ -391,7 +393,10 @@ void SemilinearSystem::Run(double DA_P_Lambda_Coefficients[], bool write2file_bo
   //	Reading the initial conditions for P and Q
   Set_IC_Q(DA_P_Values_Q, I_NumberOfCells, D_Boundary_Position_Left, D_Delta_x);	
   Set_IC_P(DA_P_Values_P, I_NumberOfCells, D_Boundary_Position_Left, D_Delta_x);
-  
+
+  /* filling the initial pressure boundary data */
+  DA_P_Left_P[0]                    = DA_P_Values_P[0];
+  DA_P_Right_P[0] = DA_P_Values_P[I_NumberOfCells+1];
   
   //	Declaring arrays for P,Q that store intermediate results
   double DA_Values_P_Intermediate[I_NumberOfCells + 2];
@@ -412,7 +417,7 @@ void SemilinearSystem::Run(double DA_P_Lambda_Coefficients[], bool write2file_bo
   if (write2file_bool){
     Write2File(filename, false);
   }
-  
+
   //	Solving the forward problem with current friction coefficient
   //	Loop over timesteps of the discretization
   for (int I_TimeStepCount = 1; I_TimeStepCount <= I_NumberOfTimeSteps; ++I_TimeStepCount)//1; ++I_TimeStepCount)//
