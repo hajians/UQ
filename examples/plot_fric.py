@@ -21,7 +21,7 @@ dx = 0.005
 boundary_eps = 0.05
 
 ## true friction coefficient
-true_friction = [1.01563, 0.0148381, 0., 0., -0.0126651, -0.00960923, 0., 0., \
+true_friction = [0.165625, 0.0148381, 0., 0., -0.0126651, -0.00960923, 0., 0., \
                  0.00633257, 0.00345932, 0., 0., -0.00140724, -0.000302819, 0., 0., \
                  0., 0.000183187, 0., 0., -0.000506606, -0.000714736, 0., 0., \
                  0.000703619, 0.000511734, 0., 0., -0.000258472, -0.0000659473, 0., \
@@ -42,8 +42,8 @@ y_obs = normal(0.0, 0.1, time_ins) + \
 
 # construct a pipe for computation
 ## stochastic settings
-uni_prior_down = [0.0, -0.5, -0.5, -0.5, -0.5]
-uni_prior_up   = [2.0, 0.5, 0.5, 0.5, 0.5]
+uni_prior_down = [0.0, -0.15, -0.15, -0.15, -0.15]
+uni_prior_up   = [0.5, 0.15, 0.15, 0.15, 0.15]
 
 sigma_normal   = 0.05
 
@@ -163,7 +163,7 @@ if __name__ == "__main__":
         #plt.plot(pipe.timeslices, pipe.pressure_drop, "o-")
         plt.plot(pipe_tmp.mesh, pipe_tmp.lambda_avg)
     
-    #plt.show()
+    plt.show()
     
     # clean memory
     collect()
