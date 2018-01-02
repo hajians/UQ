@@ -42,12 +42,12 @@ y_obs = normal(0.0, 0.1, time_ins) + \
 
 # construct a pipe for computation
 ## stochastic settings
-uni_prior_down = [0.0]
-uni_prior_up   = [2.0]
+uni_prior_down = [0.0, -0.5, -0.5, -0.5, -0.5]
+uni_prior_up   = [2.0, 0.5, 0.5, 0.5, 0.5]
 
 sigma_normal   = 0.05
 
-initial_point_mcmc = [0.45]
+initial_point_mcmc = [0.45, 0.0, 0.0, 0.0, 0.0]
 expan_coef = len(initial_point_mcmc)
 
 pipe = SemiLinSystem(c_sound, t_final, x_l, x_r, dx, expan_coef, boundary_eps)
@@ -163,7 +163,7 @@ if __name__ == "__main__":
         #plt.plot(pipe.timeslices, pipe.pressure_drop, "o-")
         plt.plot(pipe_tmp.mesh, pipe_tmp.lambda_avg)
     
-    plt.show()
+    #plt.show()
     
     # clean memory
     collect()
@@ -173,7 +173,7 @@ if __name__ == "__main__":
     mcmc = MCMC(density, proposal_density, draw_from_proposal, initial_point_mcmc)
 
     # run the MCMC sample
-    mcmc.run(max_iter = 2000, burning=1000)
+    mcmc.run(max_iter = 2000, burning=200)
     # write the samples into a file
     mcmc.write("samples.dat")
 
