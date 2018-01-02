@@ -26,7 +26,7 @@
 
     double* CTimeSlices(SemilinearSystem* pipe);
 
-    double* CLambda_Average(SemilinearSystem* pipe, double DA_P_Lambda_Coefficients_GIVEN[]);
+    void CLambda_Average(SemilinearSystem* pipe, double DA_P_Lambda_Coefficients_GIVEN[]);
 
     double* CGetLambda_Average(SemilinearSystem* pipe);
     

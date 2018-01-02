@@ -322,10 +322,16 @@ void SemilinearSystem::Set_Lambda_Averages( double* DA_P_Lambda_AV, double* DA_P
 		//	Evaluating the average of basis function 'j' in interval 'i'
 		  Increment			=	( Value_Lambda_Base_Sin(counter, xx_L, domain_length) + Value_Lambda_Base_Sin(counter, xx_R, domain_length) )/2.0;
 		//	Update of Lamdba-Average
-		  DA_P_Lambda_AV[i]		=	DA_P_Lambda_AV[i] + DA_P_Lambda_Coefficients[j]*Increment * ( 1.0 / pow(counter,2) );
+		  DA_P_Lambda_AV[i]		=	DA_P_Lambda_AV[i] + DA_P_Lambda_Coefficients[j]*Increment * ( 1.0 / pow(counter,0) );
 		}
-		counter = 0;
+
+		if ( abs(DA_P_Lambda_AV[i])>10.0) {
+		  cout << "C++ (set_lambda) 1 ";
+		  cout << i ;
+		}
+
 		
+		counter = 0;
 		/* for cos */
 		for (int j = 2; j < I_Lambda_Expansion_Length + 1; j+=2)
 		{
@@ -333,9 +339,12 @@ void SemilinearSystem::Set_Lambda_Averages( double* DA_P_Lambda_AV, double* DA_P
 		  //	Evaluating the average of basis function 'j' in interval 'i'
 		  Increment			=	( Value_Lambda_Base_Cos(counter, xx_L, domain_length) + Value_Lambda_Base_Cos(counter, xx_R, domain_length) )/2.0;
 		  //	Update of Lamdba-Average
-		  DA_P_Lambda_AV[i]		=	DA_P_Lambda_AV[i] + DA_P_Lambda_Coefficients[j]*Increment * ( 1.0 / pow(counter,2) );
-		}
+		  DA_P_Lambda_AV[i]		=	DA_P_Lambda_AV[i] + DA_P_Lambda_Coefficients[j]*Increment * ( 1.0 / pow(counter,0) );
 
+		}
+		
+
+		
 		/**
 		 * A bug was fixed using this script.
 		  if (abs(DA_P_Lambda_AV[i]) > 1000.0){
@@ -353,11 +362,15 @@ void SemilinearSystem::Set_Lambda_Averages( double* DA_P_Lambda_AV, double* DA_P
 		xx_R						=	xx_R + D_Delta_x;
 		
 	}
+
 	
 	//	Fixing the friction coefficient on the ghost cells on left and right boundary of the pipeline
 	//	HEURISTIK: Linear Interpolation of 2 adjacent interior cells and maximum with 0 to ensure non-negativity of the friction coefficient
 	DA_P_Lambda_AV[0]					=	max( 0.0, 2.0*DA_P_Lambda_AV[1] - DA_P_Lambda_AV[2]);
 	DA_P_Lambda_AV[I_NumberOfCells + 1]	=	max( 0.0, 2.0*DA_P_Lambda_AV[I_NumberOfCells] - DA_P_Lambda_AV[I_NumberOfCells - 1]);
+
+		//
+	
 }
 
 
@@ -830,6 +843,8 @@ void SemilinearSystem::EvalTest(   )
 
 	
 	Set_Lambda_Averages(DA_P_Lambda_AV, DA_P_Lambda_Coefficients, I_Lambda_Expansion_Length, I_NumberOfCells, D_Boundary_Position_Left, D_Delta_x);
+
+
 	
 	//	return the 0!!!!
 	return; 
@@ -904,17 +919,17 @@ double* SemilinearSystem::TimeSlices()
   return time_slices;
 }
 
-double* SemilinearSystem::LambdaAverage(double DA_P_Lambda_Coefficients_GIVEN[])
+void SemilinearSystem::LambdaAverage(double DA_P_Lambda_Coefficients_GIVEN[])
 {
   /**
    * return compute and return LambdaAverage
    */
 
+  
+  
   Set_Lambda_Averages( DA_P_Lambda_AV, DA_P_Lambda_Coefficients_GIVEN,
 		       I_Lambda_Expansion_Length, I_NumberOfCells,
 		       D_Boundary_Position_Left, D_Delta_x  );
-
-  return DA_P_Lambda_AV;
 
 }
 

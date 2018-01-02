@@ -69,6 +69,8 @@ class SemiLinSystem(object):
         Get the info of the pipe.
         '''
         lib.CInfo.argtypes = [c_void_p]
+        lib.CInfo.restype = None
+        
         lib.CInfo(self.obj)
 
     def run(self, coef, write_bool=False, progress_bool=True):
@@ -84,6 +86,7 @@ class SemiLinSystem(object):
         '''
         if self.lambda_len==len(coef):
             lib.CRun.argtypes = [c_void_p, c_double * len(coef), c_bool, c_bool]
+            lib.CRun.restype  = None
             lib.CRun(self.obj, (c_double * len(coef))(*coef), c_bool(write_bool), c_bool(progress_bool) )
         else:
             print "Error in run: coef does not have correct size"
@@ -157,11 +160,13 @@ class SemiLinSystem(object):
         self.lambda_avg = np.empty(self.NumberofCells, dtype=c_double)
 
         lib.CLambda_Average.argtypes = [c_void_p, c_double * len(vec_coef)]
-        lib.CLambda_Average.restype = POINTER(c_double)
+        lib.CLambda_Average.restype = None
+        
+        lib.CLambda_Average(self.obj, (c_double * len(vec_coef))(*vec_coef))
 
-        for i in range(self.NumberofCells):
-            self.lambda_avg[i] = lib.CLambda_Average(self.obj, (c_double * len(vec_coef))(*vec_coef))[i+1]
 
+        self.get_current_lambda_average()
+        
     def get_current_lambda_average(self):
         '''
         Get the lambda average array. This is updated after each self.run command.
@@ -174,8 +179,6 @@ class SemiLinSystem(object):
 
         for i in range(self.NumberofCells):
             self.lambda_avg[i] = lib.CGetLambda_Average(self.obj)[i+1]
-
-        
         
     def _TimeSlices(self):
         '''

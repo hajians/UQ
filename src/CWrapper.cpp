@@ -75,9 +75,9 @@ extern "C" {
   /**
    * Gives back the Friction function averaged over the mesh.
    */
-  double* CLambda_Average(SemilinearSystem* pipe, double DA_P_Lambda_Coefficients_GIVEN[])
+  void CLambda_Average(SemilinearSystem* pipe, double DA_P_Lambda_Coefficients_GIVEN[])
   {
-    return pipe->LambdaAverage(DA_P_Lambda_Coefficients_GIVEN);
+    pipe->LambdaAverage(DA_P_Lambda_Coefficients_GIVEN);
   }
 
   /**
