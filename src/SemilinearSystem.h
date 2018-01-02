@@ -104,7 +104,7 @@ class SemilinearSystem
   double* BoundaryValueP_Left();
   double* BoundaryValueP_Right();
   double* TimeSlices();
-  double* LambdaAverage(double *);
+  void LambdaAverage(double *);
   double* SendLambdaAverage();
   int NumberofCells();
  private:
