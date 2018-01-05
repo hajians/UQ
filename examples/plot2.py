@@ -60,7 +60,9 @@ filename = "samples-9-v7.0.dat"
 dfRaw = pd.read_csv(filename, header=None)
 df = dfRaw.iloc[:,:-1]
 prob = dfRaw.iloc[:,-1]
-sorted_prob_idx = prob.loc[9000:15000].sort_values(ascending=False).index.values
+#sorted_prob_idx = prob.loc[9000:15000].sort_values(ascending=False).index.values
+sorted_prob_idx = prob.loc[19000:21000].sort_values(ascending=False).index.values
+sorted_prob_idx = prob.loc[30000:35000].sort_values(ascending=False).index.values
 density_samples = df.values
 
 pipe_true.info()
@@ -121,7 +123,9 @@ if __name__=="__main__":
     # plt.show(block=False)
 
     plt.figure()
-    plt.plot(prob)
+    plt.plot(prob, label="MCMC samples")
+    plt.xlabel("sample index", fontsize=24)
+    plt.ylabel("$\propto P(\lambda | y)$", fontsize=24)
     plt.show(block=False)
 
     # plot the mean function, true and the initial sample
