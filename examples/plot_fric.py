@@ -8,6 +8,8 @@ from numpy import empty
 from math  import isnan
 from gc    import collect
 
+import pandas as pd
+
 import matplotlib.pyplot as plt
 
 
@@ -21,12 +23,11 @@ dx = 0.005
 boundary_eps = 0.05
 
 ## true friction coefficient
-true_friction = [0.165625, 0.0148381, 0., 0., -0.0126651, -0.00960923, 0., 0., \
-                 0.00633257, 0.00345932, 0., 0., -0.00140724, -0.000302819, 0., 0., \
-                 0., 0.000183187, 0., 0., -0.000506606, -0.000714736, 0., 0., \
-                 0.000703619, 0.000511734, 0., 0., -0.000258472, -0.0000659473, 0., \
-                 0., 0., 0.0000513431, 0., 0., -0.00015636, -0.000239565, 0., 0., \
-                 0.000253303]
+true_friction = [0.185938, -0.0519335, 0., 0., -0.0696583, 0.0336323, 0., 0., \
+                 0.0348292, -0.0121076, 0., 0., -0.00773981, 0.00105987, 0., 0., 0., \
+                 -0.000641154, 0., 0., -0.00278633, 0.00250158, 0., 0., 0.00386991, \
+                 -0.00179107, 0., 0., -0.0014216, 0.000230816, 0., 0., 0., \
+                 -0.000179701, 0., 0., -0.000859979, 0.000838478, 0., 0., 0.00139317]
 
 true_expan_coef = len(true_friction)
 
@@ -35,23 +36,28 @@ time_ins = 20
 ## construct and run the true pipe
 pipe_true = SemiLinSystem(c_sound, t_final, x_l, x_r, dx, true_expan_coef, boundary_eps)
 pipe_true.run(true_friction)
-y_obs = normal(0.0, 0.1, time_ins) + \
-        pipe_true.get_presure_drop(time_instance=time_ins, inplace=False)
-
-
+# y_obs = normal(0.0, 0.05, time_ins) + \
+#         pipe_true.get_presure_drop(time_instance=time_ins, inplace=False)
+y_obs = pipe_true.get_presure_drop(time_instance=time_ins, inplace=False)
 
 # construct a pipe for computation
 ## stochastic settings
-uni_prior_down = [0.0, -0.15, -0.15, -0.15, -0.15]
-uni_prior_up   = [0.5, 0.15, 0.15, 0.15, 0.15]
+# uni_prior_down = [0.0, -0.025, -0.025, -0.025, -0.025, -0.01, -0.01, -0.01, -0.01, -0.01, -0.01]
+# uni_prior_up   = [0.45, 0.025, 0.025, 0.025, 0.025, 0.01, 0.01, 0.01, 0.01, 0.01, 0.01]
 
-sigma_normal   = 0.05
+uni_prior_down = [0.0, -0.025, -0.025, -0.025, -0.025, -0.01, -0.01, -0.01, -0.01]
+uni_prior_up   = [0.45, 0.025, 0.025, 0.025, 0.025, 0.01, 0.01, 0.01, 0.01]
 
-initial_point_mcmc = [0.45, 0.0, 0.0, 0.0, 0.0]
+
+sigma_normal   = 0.001
+
+# initial_point_mcmc = [0.25, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
+initial_point_mcmc = [0.25, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
+
 expan_coef = len(initial_point_mcmc)
 
 pipe = SemiLinSystem(c_sound, t_final, x_l, x_r, dx, expan_coef, boundary_eps)
-pipe.info()
+
 
 def uni_prior(x):
     '''
@@ -65,8 +71,9 @@ def uni_prior(x):
 
     volume = 1.0
 
-    for i in range(len(x)):
-        volume *= abs(uni_prior_up[i] - uni_prior_down[i])
+    # for i in range(len(x)):
+    #     volume *= abs(uni_prior_up[i] - uni_prior_down[i])
+    # *** do not normalize: in high-dim we divide by very small numbers ***
 
     normalize = 1.0 / volume
 
@@ -116,8 +123,8 @@ def likelihood(x):
     x: float * len(x)
     '''
     # check 
-    for i in x:
-        if i<0: return 0.0
+    # for i in x:
+    #     if i<0: return 0.0
      
     pipe.run(x, progress_bool=False)
     
@@ -150,7 +157,11 @@ def density(x):
 
 if __name__ == "__main__":
 
-    
+    filename = "samples-9-v7.0.dat"
+
+    # df = pd.read_csv("tmp.dat", header=None)
+    # initial_point_mcmc = df.iloc[-1,0:-1].values
+
     for i in range(1,len(true_friction),2):
         tmp = true_friction[:i]
         pipe_tmp = SemiLinSystem(c_sound, t_final, x_l, x_r, dx, len(tmp), boundary_eps)
@@ -168,14 +179,11 @@ if __name__ == "__main__":
     # clean memory
     collect()
 
-    
+    pipe.info()
     ### instantiate an MCMC sampler
     mcmc = MCMC(density, proposal_density, draw_from_proposal, initial_point_mcmc)
 
     # run the MCMC sample
-    mcmc.run(max_iter = 2000, burning=200)
+    mcmc.run(max_iter = 50000, burning=5000)
     # write the samples into a file
-    mcmc.write("samples.dat")
-
-
-    
+    mcmc.write(filename, write_prob=True)
