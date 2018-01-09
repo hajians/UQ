@@ -31,7 +31,7 @@ true_friction = [0.185938, -0.0519335, 0., 0., -0.0696583, 0.0336323, 0., 0., \
 
 true_expan_coef = len(true_friction)
 
-time_ins = 20
+time_ins = 40
 
 ## construct and run the true pipe
 pipe_true = SemiLinSystem(c_sound, t_final, x_l, x_r, dx, true_expan_coef, boundary_eps)
@@ -52,7 +52,9 @@ uni_prior_up   = [0.45, 0.025, 0.025, 0.025, 0.025, 0.01, 0.01, 0.01, 0.01]
 sigma_normal   = 0.001
 
 # initial_point_mcmc = [0.25, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
-initial_point_mcmc = [0.25, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
+# initial_point_mcmc = [0.25, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
+initial_point_mcmc = [ 0.18562064, -0.02437987, -0.01683006,  0.0036621 , -0.02162891, \
+                       -0.00511077, -0.0002852 , -0.00790147,  0.00633092]
 
 expan_coef = len(initial_point_mcmc)
 
@@ -157,10 +159,13 @@ def density(x):
 
 if __name__ == "__main__":
 
-    filename = "samples-9-v7.0.dat"
+    filename = "samples-9-v8.3.dat"
 
     # df = pd.read_csv("tmp.dat", header=None)
     # initial_point_mcmc = df.iloc[-1,0:-1].values
+    linestyles = ['-.', '-', '--', ':']
+    counter = 0
+    plt.style.use('grayscale')
 
     for i in range(1,len(true_friction),2):
         tmp = true_friction[:i]
@@ -172,8 +177,21 @@ if __name__ == "__main__":
         pipe_tmp.get_lambda_average(tmp)
         
         #plt.plot(pipe.timeslices, pipe.pressure_drop, "o-")
-        plt.plot(pipe_tmp.mesh, pipe_tmp.lambda_avg)
+        if i in [1,5,7,13,19,25,39]:
+            print i%len(linestyles)
+            plt.plot(pipe_tmp.mesh, pipe_tmp.lambda_avg, 
+                     linestyle=linestyles[counter%len(linestyles)],
+                     label="$N="+str((i+1)/2)+"$")
+            counter += 1
     
+
+    plt.legend(loc="best", prop={'size': 14}, frameon=False)
+    plt.yticks(fontsize=20)
+    plt.xticks(fontsize=20)
+    plt.xlabel("$x$", fontsize=24)
+    plt.ylabel("$\lambda^N(x)$", fontsize=24)
+    plt.tight_layout()
+    plt.savefig("results/figure_fric_bump.pgf")
     plt.show()
     
     # clean memory
@@ -184,6 +202,6 @@ if __name__ == "__main__":
     mcmc = MCMC(density, proposal_density, draw_from_proposal, initial_point_mcmc)
 
     # run the MCMC sample
-    mcmc.run(max_iter = 50000, burning=5000)
+    mcmc.run(max_iter = 200000, burning=5000)
     # write the samples into a file
     mcmc.write(filename, write_prob=True)
