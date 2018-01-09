@@ -167,7 +167,7 @@ if __name__ == "__main__":
     counter = 0
     plt.style.use('grayscale')
 
-    for i in range(1,len(true_friction),2):
+    for i in range(1,len(true_friction)+1,2):
         tmp = true_friction[:i]
         pipe_tmp = SemiLinSystem(c_sound, t_final, x_l, x_r, dx, len(tmp), boundary_eps)
 
@@ -177,15 +177,14 @@ if __name__ == "__main__":
         pipe_tmp.get_lambda_average(tmp)
         
         #plt.plot(pipe.timeslices, pipe.pressure_drop, "o-")
-        if i in [1,5,7,13,19,25,39]:
-            print i%len(linestyles)
+        if i in [1,5,7,13,19,25,41]:
             plt.plot(pipe_tmp.mesh, pipe_tmp.lambda_avg, 
                      linestyle=linestyles[counter%len(linestyles)],
-                     label="$N="+str((i+1)/2)+"$")
+                     label="$N="+str(i/2)+"$")
             counter += 1
     
 
-    plt.legend(loc="best", prop={'size': 14}, frameon=False)
+    plt.legend(loc="best", prop={'size': 16}, frameon=False)
     plt.yticks(fontsize=20)
     plt.xticks(fontsize=20)
     plt.xlabel("$x$", fontsize=24)
