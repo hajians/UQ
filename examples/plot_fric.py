@@ -177,7 +177,7 @@ if __name__ == "__main__":
         pipe_tmp.get_lambda_average(tmp)
         
         #plt.plot(pipe.timeslices, pipe.pressure_drop, "o-")
-        if i in [1,5,7,13,19,25,41]:
+        if i in [1,9,11,19,25,41]:
             plt.plot(pipe_tmp.mesh, pipe_tmp.lambda_avg, 
                      linestyle=linestyles[counter%len(linestyles)],
                      label="$N="+str(i/2)+"$")
