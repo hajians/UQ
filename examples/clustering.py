@@ -7,7 +7,7 @@ from sklearn.cluster import KMeans, AffinityPropagation, MeanShift, SpectralClus
 from UQuant.SemilinearSystem import SemiLinSystem
 
 ## reading data
-df = pd.read_csv("results/samples-11-v0.0.dat", header=None)
+df = pd.read_csv("results/samples-13-v0.0.dat", header=None)
 
 threshold = 0.95
 
@@ -84,7 +84,7 @@ for cluster in range(n_clusters):
         ax.tick_params(axis='y', labelleft=False)
 
 plt.tight_layout()
-plt.savefig("results/cluster.pgf")
+plt.savefig("results/cluster_13.pgf")
 plt.show(block=False)
 
 # plot pressure drop
@@ -106,7 +106,7 @@ for cluster in range(n_clusters):
     mean_cluster.append( df.iloc[pred==cluster, :].mean().values )
     pipe.run(mean_cluster[cluster])
     pipe.get_presure_drop(time_instance=time_ins)
-    ax.plot(pipe.timeslices, pipe.pressure_drop, markers[cluster],
+    ax.plot(pipe.timeslices, pipe.pressure_drop, markers[cluster % len(markers)],
              markersize=10)
     ax.set_title("$\Lambda_"+str(cluster+1)+"$",
                  fontsize=24)
@@ -119,6 +119,6 @@ for cluster in range(n_clusters):
         plt.ylabel("$\delta p_h^n$", fontsize=24)
         
 plt.legend(loc=5, borderaxespad=0.0, prop={'size': 20}, frameon=False)
-plt.savefig("results/pressuredrop_cluster.pgf")
+plt.savefig("results/pressuredrop_cluster_13.pgf")
 plt.show()
 
