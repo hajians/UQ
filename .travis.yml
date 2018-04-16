@@ -3,7 +3,7 @@ language: cpp
 before_install:
 - sudo apt-get update
 - sudo apt-get -y install python-pip
-- sudo pip install urllib3[secure] --upgrade
+- pip install requests[security]
 - sudo -H pip install -r requirements.txt
 script:
 - make lib/CWrapper.so
