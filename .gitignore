@@ -1,6 +1,8 @@
 *~
 *.o
 *.pyc
-results/*.dat
-results/*.pgf
+*.pgf
+*.dat
+*.so
+*.gif
 *#
