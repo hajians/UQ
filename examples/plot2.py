@@ -8,7 +8,7 @@ import sys
 
 from numpy.random import normal
 from numpy import pi, exp, dot
-from numpy import empty
+from numpy import empty, arange, append
 
 import pandas as pd
 import matplotlib.pyplot as plt
@@ -56,7 +56,7 @@ y_obs = normal(0.0, 0.1, time_ins) + \
 # construct a pipe for computation
 pipe = SemiLinSystem(c_sound, t_final, x_l, x_r, dx, expan_coef, boundary_eps)
 
-filename = "samples-9-v7.0.dat"
+filename = "results/samples-9-v7.0.dat"
 dfRaw = pd.read_csv(filename, header=None)
 df = dfRaw.iloc[:,:-1]
 prob = dfRaw.iloc[:,-1]
@@ -124,8 +124,13 @@ if __name__=="__main__":
 
     plt.figure()
     plt.plot(prob, label="MCMC samples")
-    plt.xlabel("sample index", fontsize=24)
-    plt.ylabel("$\propto P(\lambda | y)$", fontsize=24)
+    plt.xlabel("$i$", fontsize=24)
+    plt.ylabel("$\propto \pi_y(\lambda_{(i)})$", fontsize=24)
+    plt.xticks(append(arange(0, len(prob), 7500),len(prob)),
+               rotation=25, fontsize=18)
+    plt.yticks(fontsize=20)
+    plt.tight_layout()
+    plt.savefig("results/samples_posterior.pgf")
     plt.show(block=False)
 
     # plot the mean function, true and the initial sample

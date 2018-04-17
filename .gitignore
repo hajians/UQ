@@ -1,4 +1,8 @@
 *~
 *.o
 *.pyc
+*.pgf
+*.dat
+*.so
+*.gif
 *#
