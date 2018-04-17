@@ -79,7 +79,11 @@ time_ins = 40
 ## construct and run the true pipe
 pipe_true = SemiLinSystem(c_sound, t_final, x_l, x_r, dx, true_expan_coef, boundary_eps)
 pipe_true.run(true_friction)
-y_obs = normal(0.0, 0.05, time_ins) + \
+
+std_noise = 0.05
+mean_noise = 0.0
+
+y_obs = normal(mean_noise, std_noise, time_ins) + \
         pipe_true.get_presure_drop(time_instance=time_ins, inplace=False)
 
 # construct a pipe for computation
@@ -150,7 +154,7 @@ def Nlikelihood(x):
     
     S = pipe.get_presure_drop(time_instance=time_ins, inplace=False)
 
-    out = 0.5 * dot(S-y_obs, S-y_obs)
+    out = 0.5 * dot(S-y_obs, S-y_obs) / std_noise
 
     return out
 
@@ -161,6 +165,6 @@ if __name__ == "__main__":
     pipe.info()
 
     pcn = PCN(Nlikelihood, uniform_to_normal, normal_to_uniform, initial_point_mcmc)
-    pcn.run(max_iter=2000, burning=400)
+    pcn.run(max_iter=10000, burning=400)
     
     pcn.write(filename, write_prob=True)
