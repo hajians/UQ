@@ -98,8 +98,8 @@ class PCN(object):
                 alpha = min(1.0, exp(likelihood_old - likelihood_prop) )
             except:
                 print "error in PCN.run:"
-                print self.likelihood(x_prop), x_prop
-                print self.likelihood(x_old), x_old
+                print self.Nlikelihood(x_prop), x_prop
+                print self.Nlikelihood(x_old), x_old
                 alpha = 0.0
                 
             if ( alpha > uniform(0.0,1.0) ):
