@@ -7,9 +7,10 @@ from sklearn.cluster import KMeans, AffinityPropagation, MeanShift, SpectralClus
 from UQuant.SemilinearSystem import SemiLinSystem
 
 ## reading data
-df = pd.read_csv("results/samples-11-v0.0.dat", header=None)
+# "results/samples-11-v0.0.dat"
+df = pd.read_csv("results/uq_pcn.dat", header=None)
 
-threshold = 0.95
+threshold = 0.75
 
 df = df[ df.iloc[:,-1] > df.iloc[:,-1].max()*threshold ].iloc[:,:-1]
 
@@ -38,8 +39,8 @@ X = df.values
 
 ### KMeans model
 n_clusters = 4
-model = KMeans(n_clusters=n_clusters, random_state=0)
-model = SpectralClustering(n_clusters=n_clusters)
+model = KMeans(n_clusters=n_clusters, random_state=100)
+#model = SpectralClustering(n_clusters=n_clusters, n_jobs=2, random_state=0)
 ### AffinityPropagation model
 #model = AffinityPropagation()
 
@@ -58,24 +59,27 @@ mean_cluster = []
 clusters = []
 fig = plt.figure(figsize=(10, 5))
 
-for cluster in range(n_clusters):
+show_clusters = range(n_clusters)
+n_show_clusters = len(show_clusters)
 
-    ax = fig.add_subplot(1,n_clusters,cluster+1)
+for idx, cluster in enumerate(show_clusters):
+
+    ax = fig.add_subplot(1,n_show_clusters,idx+1)
     
     plt.yticks(fontsize=18)
     plt.xticks(fontsize=18, rotation=25)
     plt.xlabel("$x$", fontsize=24)
     
     mean_cluster.append( df.iloc[pred==cluster, :].mean().values )
-    pipe.get_lambda_average(mean_cluster[cluster])
+    pipe.get_lambda_average(mean_cluster[idx])
     ax.plot(pipe.mesh, pipe.lambda_avg,
-             label="$E(\Lambda_"+str(cluster+1)+")(x)$")
+             label="$E(\Lambda_"+str(idx+1)+")(x)$")
 
     pipe_true.get_lambda_average(true_friction)
     ax.plot(pipe_true.mesh, pipe_true.lambda_avg, "--",
              label="$\lambda_{true}(x)$")
 
-    ax.legend(loc="upper left", prop={'size': 16}, frameon=False)
+    #ax.legend(loc="upper left", prop={'size': 16}, frameon=False)
     ax.set_aspect(aspect=6)
     ax.legend(loc='upper left', bbox_to_anchor=(0.05, 1.275), fontsize=12)
               
@@ -84,7 +88,7 @@ for cluster in range(n_clusters):
         ax.tick_params(axis='y', labelleft=False)
 
 plt.tight_layout()
-plt.savefig("results/cluster.pgf")
+plt.savefig("results/cluster_13.pgf")
 plt.show(block=False)
 
 # plot pressure drop
@@ -106,7 +110,7 @@ for cluster in range(n_clusters):
     mean_cluster.append( df.iloc[pred==cluster, :].mean().values )
     pipe.run(mean_cluster[cluster])
     pipe.get_presure_drop(time_instance=time_ins)
-    ax.plot(pipe.timeslices, pipe.pressure_drop, markers[cluster],
+    ax.plot(pipe.timeslices, pipe.pressure_drop, markers[cluster % len(markers)],
              markersize=10)
     ax.set_title("$\Lambda_"+str(cluster+1)+"$",
                  fontsize=24)
@@ -119,6 +123,6 @@ for cluster in range(n_clusters):
         plt.ylabel("$\delta p_h^n$", fontsize=24)
         
 plt.legend(loc=5, borderaxespad=0.0, prop={'size': 20}, frameon=False)
-plt.savefig("results/pressuredrop_cluster.pgf")
+plt.savefig("results/pressuredrop_cluster_13.pgf")
 plt.show()
 

@@ -36,6 +36,8 @@ class MCMC(object):
 
         self.density_samples = []
 
+        self.prob_density_samples = []
+
         self.num_proposals = 0
 
 
@@ -79,6 +81,7 @@ class MCMC(object):
                 x_old = x_prop
                 if (it > burning):
                     self.density_samples.append(x_prop)
+                    self.prob_density_samples.append(self.density(x_prop))
 
             if it%100==1:
                 print "iter: ", it, ", # samples: ", len(self.density_samples)
@@ -86,7 +89,7 @@ class MCMC(object):
             self.num_proposals += 1
             
             
-    def write(self, filename):
+    def write(self, filename, write_prob=False):
         '''
         write the samples into the file.
 
@@ -94,13 +97,20 @@ class MCMC(object):
         -----------
 
         filename: str
+
+        write_prob: bool
+        determines whether to write the probabilities in the last column or not.
         
         '''
 
         with open(filename, "w") as output:
-            for sample in self.density_samples:
+            for idx, sample in enumerate(self.density_samples):
                 for coef in sample[:-1]:
                     output.write(str(coef)+",")
-                output.write(str(sample[-1])+"\n")
+                output.write(str(sample[-1]))
 
+                if write_prob==True:
+                    output.write(","+str(self.prob_density_samples[idx])+"\n")
+                else:
+                    output.write("\n")
     

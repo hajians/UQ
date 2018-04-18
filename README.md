@@ -5,6 +5,7 @@
   - [Quick Installation on Mac OS](#quick-installation-on-mac-os)
   - [Quick Installation on Linux](#quick-installation-on-linux)
   - [Testing](#testing)
+  - [preconditioned Crank Nicolson](#pcn)
 * [Disclaimer](#disclaimer)
 * [References](#references)
 
@@ -55,6 +56,7 @@ UQ
 |-- build
 |-- build_cpp
 |-- examples
+|-- notebooks
 |-- lib
 |-- results
 |-- src
@@ -210,6 +212,12 @@ MCMC.
 <!-- pipe = SemiLinSystem(c_sound, t_final, x_l, x_r, dx, expan_coef, boundary_eps) -->
 
 <!-- ``` -->
+
+### Preconditioned Crank Nicolson (pCN)
+
+In addition to MCMC, a dimension robust algorithm called pCN is also
+implemented. For a test case please see `examples/pcn_uq.py` or the
+jupyter notebook [`notebooks/pcn.ipynb`](notebooks/pcn.ipynb).
 
 # Disclaimer
 
