@@ -45,3 +45,5 @@ scikit_learn == 0.19.1
 
 # examples/uq_pcn.py: 54
 scipy == 0.19.1
+
+tqdm == 4.23.1
