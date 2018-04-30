@@ -5,6 +5,7 @@ from numpy.random import normal, uniform
 from numpy import empty
 
 import time
+from tqdm import tqdm
 
 # change the seed
 random.seed(int(time.time()))
@@ -85,7 +86,7 @@ class PCN(object):
         else:
             x_old = self.initial
 
-        for it in range(max_iter):
+        for it in tqdm(range(max_iter)):
             # draw from proposal
             x_old_normal = self.dist_to_normal(x_old)
             x_prop_normal = self.sample_proposal(x_old_normal, beta)
@@ -108,8 +109,8 @@ class PCN(object):
                     self.density_samples.append(x_prop)
                     self.density_probability.append(exp(-likelihood_prop))
                     
-            if it%100==1:
-                print "iter: ", it, ", # samples: ", len(self.density_samples)
+            # if it%100==1:
+            #     print "iter: ", it, ", # samples: ", len(self.density_samples)
 
             self.num_proposals += 1
                 

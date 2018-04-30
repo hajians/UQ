@@ -3,6 +3,8 @@
 from numpy import random
 import time
 
+import tqdm
+
 # change the seed
 random.seed(int(time.time()))
 
@@ -64,7 +66,7 @@ class MCMC(object):
         else:
             x_old = self.initial
         
-        for it in range(max_iter):
+        for it in tqdm(range(max_iter)):
             # draw from proposal
             x_prop = self.sample_proposal(x_old)
 
@@ -83,8 +85,8 @@ class MCMC(object):
                     self.density_samples.append(x_prop)
                     self.prob_density_samples.append(self.density(x_prop))
 
-            if it%100==1:
-                print "iter: ", it, ", # samples: ", len(self.density_samples)
+            # if it%100==1:
+            #     print "iter: ", it, ", # samples: ", len(self.density_samples)
 
             self.num_proposals += 1
             
