@@ -165,6 +165,6 @@ if __name__ == "__main__":
     pipe.info()
 
     pcn = PCN(Nlikelihood, uniform_to_normal, normal_to_uniform, initial_point_mcmc)
-    pcn.run(max_iter=10000, burning=400)
+    pcn.run(max_iter=4000, burning=400)
     
     pcn.write(filename, write_prob=True)
