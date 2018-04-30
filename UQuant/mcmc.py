@@ -3,7 +3,7 @@
 from numpy import random
 import time
 
-import tqdm
+from tqdm import tqdm
 
 # change the seed
 random.seed(int(time.time()))
