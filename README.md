@@ -5,7 +5,7 @@
   - [Quick Installation on Mac OS](#quick-installation-on-mac-os)
   - [Quick Installation on Linux](#quick-installation-on-linux)
   - [Testing](#testing)
-  - [preconditioned Crank Nicolson](#pcn)
+  - [preconditioned Crank Nicolson](#preconditioned-crank-nicolson-pcn)
 * [Disclaimer](#disclaimer)
 * [References](#references)
 
