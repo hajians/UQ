@@ -3,8 +3,6 @@
 from numpy import random
 import time
 
-from tqdm import tqdm
-
 # change the seed
 random.seed(int(time.time()))
 
@@ -62,7 +60,9 @@ class MCMC(object):
 
         if jupyter:
             from tqdm import tqdm_notebook as tqdm
-            
+        else:
+            from tqdm import tqdm
+    
         if len(self.density_samples)>0:
             x_old = self.density_samples[-1]
             burning = 0
