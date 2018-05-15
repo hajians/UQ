@@ -64,7 +64,7 @@ class PCN(object):
 
         return x_prop
 
-    def run(self, max_iter = 2000, burning=200, beta=0.5):
+    def run(self, max_iter = 2000, burning=200, beta=0.5, jupyter=False):
         """
         run PCN.
 
@@ -80,6 +80,9 @@ class PCN(object):
 
         """
 
+        if jupyter:
+            from tqdm import tqdm_notebook as tqdm
+            
         if len(self.density_samples)>0:
             x_old = self.density_samples[-1]
             burning = 0

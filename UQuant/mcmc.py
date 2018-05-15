@@ -43,7 +43,7 @@ class MCMC(object):
         self.num_proposals = 0
 
 
-    def run(self, max_iter = 2000, burning=200):
+    def run(self, max_iter = 2000, burning=200, jupyter=False):
         '''run MCMC.
 
         Parameters
@@ -60,6 +60,9 @@ class MCMC(object):
 
         '''
 
+        if jupyter:
+            from tqdm import tqdm_notebook as tqdm
+            
         if len(self.density_samples)>0:
             x_old = self.density_samples[-1]
             burning = 0
