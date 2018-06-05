@@ -40,6 +40,12 @@ class MCMC(object):
 
         self.num_proposals = 0
 
+        # stats are used to check how many 
+        # proposals are accepted and rejected.
+        self.stats = {
+            "accepted": 0,
+            "rejected": 0,
+        }
 
     def run(self, max_iter = 2000, burning=200, jupyter=False):
         '''run MCMC.
@@ -88,8 +94,9 @@ class MCMC(object):
                     self.density_samples.append(x_prop)
                     self.prob_density_samples.append(self.density(x_prop))
 
-            # if it%100==1:
-            #     print "iter: ", it, ", # samples: ", len(self.density_samples)
+                self.stats["accepted"] += 1
+            else:
+                self.stats["rejected"] += 1
 
             self.num_proposals += 1
             

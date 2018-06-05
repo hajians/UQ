@@ -38,6 +38,13 @@ class PCN(object):
         self.density_probability = []
         
         self.num_proposals = 0
+        
+        # stats are used to check how many 
+        # proposals are accepted and rejected.
+        self.stats = {
+            "accepted": 0,
+            "rejected": 0,
+        }
 
     @staticmethod
     def sample_proposal(x_old, beta):
@@ -113,8 +120,9 @@ class PCN(object):
                     self.density_samples.append(x_prop)
                     self.density_probability.append(exp(-likelihood_prop))
                     
-            # if it%100==1:
-            #     print "iter: ", it, ", # samples: ", len(self.density_samples)
+                self.stats["accepted"] += 1
+            else:
+                self.stats["rejected"] += 1                
 
             self.num_proposals += 1
                 
