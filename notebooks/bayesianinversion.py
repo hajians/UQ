@@ -24,12 +24,10 @@ def iscloselist(a, List):
             return idx
     return None
 
-class MCMCBayesianInversion(object):
+class BayesianInversion(object):
     '''
-    GasBayesianInversion solves a Bayesian Inverse 
-    problem for Gas pipe friction coefficients.
+    A template class for Bayesian Inversion.
     '''
-    
     def __init__(self, c_sound, t_final, x_l, x_r, dx, expan_coef, boundary_eps, time_ins):
         from UQuant.SemilinearSystem import SemiLinSystem
     
@@ -42,8 +40,7 @@ class MCMCBayesianInversion(object):
         self.time_ins = time_ins
         
         self.pipe = SemiLinSystem(c_sound, t_final, x_l, x_r, dx, expan_coef, boundary_eps)
-         
-    
+
     @staticmethod
     def EvalY_obs(timeslices, y_obs, y_obs_times):
         '''
@@ -72,7 +69,17 @@ class MCMCBayesianInversion(object):
                 else:
                     out[idx] = 0.5*(y_obs[right]+y_obs[left])
         return out
-
+    
+class MCMCBayesianInversion(BayesianInversion):
+    '''
+    GasBayesianInversion solves a Bayesian Inverse 
+    problem for Gas pipe friction coefficients.
+    '''
+    
+    def __init__(self, c_sound, t_final, x_l, x_r, dx, expan_coef, boundary_eps, time_ins):
+        BayesianInversion.__init__(self, c_sound, t_final, x_l, x_r, dx, expan_coef, boundary_eps, time_ins)
+         
+    
     def uni_prior(self, x):
         '''
         uniform prior
@@ -204,55 +211,15 @@ class MCMCBayesianInversion(object):
         
         self.sampler.run(max_iter=max_iter, burning=burning, jupyter=jupyter)
         
-class PCNBayesianInversion(object):
+class PCNBayesianInversion(BayesianInversion):
     '''
     GasBayesianInversion solves a Bayesian Inverse 
     problem for Gas pipe friction coefficients.
     '''
     
     def __init__(self, c_sound, t_final, x_l, x_r, dx, expan_coef, boundary_eps, time_ins):
-        from UQuant.SemilinearSystem import SemiLinSystem
+        BayesianInversion.__init__(self, c_sound, t_final, x_l, x_r, dx, expan_coef, boundary_eps, time_ins)       
     
-        self.c_sound, self.t_final = c_sound, t_final
-        
-        self.x_l, self.x_r = x_l, x_r
-        
-        self.dx, self.expan_coef, self.boundary_eps = dx, expan_coef, boundary_eps
-        
-        self.time_ins = time_ins
-        
-        self.pipe = SemiLinSystem(c_sound, t_final, x_l, x_r, dx, expan_coef, boundary_eps)
-         
-    
-    @staticmethod
-    def EvalY_obs(timeslices, y_obs, y_obs_times):
-        '''
-        evaluates a given time_instances on y_obs.
-
-        Parameters
-        ----------
-
-        time_instances: float * len(time_instances)
-
-        '''
-
-        out = empty(len(timeslices), dtype=float)    
-
-        for idx, time in enumerate(timeslices):
-            inList = iscloselist(time, y_obs_times)
-            if inList!=None:
-                out[idx] = y_obs[inList]
-            else:
-                right = bisect(y_obs_times, time)
-                left  = right - 1
-                if left < 0:
-                    out[idx] = y_obs[right]
-                elif right >= len(y_obs_times):
-                    out[idx] = y_obs[left]
-                else:
-                    out[idx] = 0.5*(y_obs[right]+y_obs[left])
-        return out
-
     def normal_to_uniform(self, x):
         """normal_to_uniform converts a given vector x with normal
         distribution (0, I) into a vector with uniform distribution.
@@ -346,5 +313,7 @@ class PCNBayesianInversion(object):
                            self.uniform_to_normal, 
                            self.normal_to_uniform, 
                            self.initial_point_mcmc)
+
+        beta = conf["beta"]
         
-        self.sampler.run(max_iter=max_iter, burning=burning, jupyter=jupyter)
+        self.sampler.run(max_iter=max_iter, burning=burning, beta=beta, jupyter=jupyter)
