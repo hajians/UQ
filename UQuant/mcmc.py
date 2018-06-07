@@ -94,9 +94,10 @@ class MCMC(object):
                     self.density_samples.append(x_prop)
                     self.prob_density_samples.append(self.density(x_prop))
 
-                self.stats["accepted"] += 1
+                    self.stats["accepted"] += 1
             else:
-                self.stats["rejected"] += 1
+                if (it > burning):
+                    self.stats["rejected"] += 1
 
             self.num_proposals += 1
             

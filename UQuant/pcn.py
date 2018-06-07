@@ -113,16 +113,17 @@ class PCN(object):
                 print self.Nlikelihood(x_prop), x_prop
                 print self.Nlikelihood(x_old), x_old
                 alpha = 0.0
-                
+            
             if ( alpha > uniform(0.0,1.0) ):
                 x_old = x_prop
                 if (it > burning):
                     self.density_samples.append(x_prop)
                     self.density_probability.append(exp(-likelihood_prop))
                     
-                self.stats["accepted"] += 1
+                    self.stats["accepted"] += 1
             else:
-                self.stats["rejected"] += 1                
+                if (it > burning):
+                    self.stats["rejected"] += 1                
 
             self.num_proposals += 1
                 
