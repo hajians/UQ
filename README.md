@@ -234,5 +234,5 @@ different use, please contact the authors. See the
 # References
 1. S. Hajian, M. Hintermüller, C. Schillings and N. Strogies, 
    **A Bayesian approach for parameter identification in gas networks**,
-   in progress. 
+   [PDF](http://www.wias-berlin.de/preprint/2537/wias_preprints_2537.pdf). 
    
