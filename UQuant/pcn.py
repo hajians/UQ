@@ -5,7 +5,6 @@ from numpy.random import normal, uniform
 from numpy import empty
 
 import time
-from tqdm import tqdm
 
 # change the seed
 random.seed(int(time.time()))
@@ -39,6 +38,13 @@ class PCN(object):
         self.density_probability = []
         
         self.num_proposals = 0
+        
+        # stats are used to check how many 
+        # proposals are accepted and rejected.
+        self.stats = {
+            "accepted": 0,
+            "rejected": 0,
+        }
 
     @staticmethod
     def sample_proposal(x_old, beta):
@@ -64,7 +70,7 @@ class PCN(object):
 
         return x_prop
 
-    def run(self, max_iter = 2000, burning=200, beta=0.5):
+    def run(self, max_iter = 2000, burning=200, beta=0.5, jupyter=False):
         """
         run PCN.
 
@@ -79,6 +85,11 @@ class PCN(object):
         constant in the proposal step of PCN.
 
         """
+
+        if jupyter:
+            from tqdm import tqdm_notebook as tqdm
+        else:
+            from tqdm import tqdm
 
         if len(self.density_samples)>0:
             x_old = self.density_samples[-1]
@@ -102,15 +113,17 @@ class PCN(object):
                 print self.Nlikelihood(x_prop), x_prop
                 print self.Nlikelihood(x_old), x_old
                 alpha = 0.0
-                
+            
             if ( alpha > uniform(0.0,1.0) ):
                 x_old = x_prop
                 if (it > burning):
                     self.density_samples.append(x_prop)
                     self.density_probability.append(exp(-likelihood_prop))
                     
-            # if it%100==1:
-            #     print "iter: ", it, ", # samples: ", len(self.density_samples)
+                    self.stats["accepted"] += 1
+            else:
+                if (it > burning):
+                    self.stats["rejected"] += 1                
 
             self.num_proposals += 1
                 
