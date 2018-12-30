@@ -1,4 +1,4 @@
-[![Build Status](https://travis-ci.org/hajianOne/UQ.svg?branch=develop)](https://travis-ci.org/hajianOne/UQ)
+[![Build Status](https://travis-ci.org/hajians/UQ.svg?branch=develop)](https://travis-ci.org/hajians/UQ)
 
 * [Introduction](#introduction)
 * [Download and installation](#download-and-installation)
