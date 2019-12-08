@@ -23,7 +23,7 @@ for i in range(0,100):
                  label="cf = "+ str(0.05 + coef))
     coef += 0.001
 
-print ">> Computation Done"
+print (">> Computation Done")
 
 plt.legend(loc=2, borderaxespad=0.0)
 plt.xticks([round(tn,2) for tn in pipe.timeslices])

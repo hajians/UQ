@@ -83,9 +83,9 @@ class MCMC(object):
             try:
                 alpha = min(1.0, self.density(x_prop)/self.density(x_old) )
             except:
-                print "error in MCMC.run:"
-                print self.density(x_prop), x_prop
-                print self.density(x_old), x_old
+                print ("error in MCMC.run:")
+                print (self.density(x_prop), x_prop)
+                print (self.density(x_old), x_old)
                 alpha = 0.0
                 
             if ( alpha > random.uniform(0.0,1.0) ):

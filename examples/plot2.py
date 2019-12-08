@@ -89,7 +89,7 @@ def update(i):
         pipe.get_lambda_average(density_samples[i])
         for data in pipe.lambda_avg:
             if abs(data)>10**2:
-                print data
+                print (data)
         lines[i-1].set_data( pipe.mesh, pipe.lambda_avg )
         lines[i-1].set_linewidth(1)
         lines[i-1].set_linestyle("-")

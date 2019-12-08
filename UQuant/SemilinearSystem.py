@@ -50,7 +50,7 @@ class SemiLinSystem(object):
                                       c_double(dx), c_int(lambda_len),
                                       c_double(eps) )
 
-        print "Address of the pipe in the memory from python: ", hex(self.obj)
+        print ("Address of the pipe in the memory from python: ", hex(self.obj))
         
         lib.CNumberofCells.restype = c_int
         lib.CNumberofCells.argtypes = [c_void_p]
@@ -89,7 +89,7 @@ class SemiLinSystem(object):
             lib.CRun.restype  = None
             lib.CRun(self.obj, (c_double * len(coef))(*coef), c_bool(write_bool), c_bool(progress_bool) )
         else:
-            print "Error in run: coef does not have correct size"
+            print ("Error in run: coef does not have correct size")
 
     def get_presure_drop(self, time_instance=10, inplace=False):
         '''
@@ -107,7 +107,7 @@ class SemiLinSystem(object):
         '''
 
         length = self._CurrentTimeIndex()
-        step   = length / time_instance
+        step   = int(length / time_instance)
         idx = range(0,length,step)
         
         self.get_boundary_p()
@@ -234,7 +234,7 @@ if __name__ == "__main__":
                      label="cf = "+ str(0.05 + coef))
         coef += 0.001
 
-    print ">> Computation Done"
+    print (">> Computation Done")
 
     plt.legend(loc=2, borderaxespad=0.0)
     plt.xticks([round(tn,2) for tn in pipe.timeslices])
