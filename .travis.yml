@@ -6,7 +6,7 @@ before_install:
 - sudo -H pip3 install -r requirements.txt
 script:
 - make lib/CWrapper.so
-- sudo python3.6 setup.py install
-- python3.6 examples/test1.py
-- python3.6 examples/test2.py
-- python3.6 examples/uq_pcn.py
+- sudo python3 setup.py install
+- python3 examples/test1.py
+- python3 examples/test2.py
+- python3 examples/uq_pcn.py
