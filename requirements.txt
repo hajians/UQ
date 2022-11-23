@@ -32,7 +32,7 @@ matplotlib == 2.0.0
 # examples/uq-vec-data.py: 53,54
 # examples/uq.py: 50,51
 # examples/uq_pcn.py: 51,52
-numpy == 1.11.3
+numpy == 1.22.0
 
 # examples/clustering.py: 3
 # examples/plot.py: 9
